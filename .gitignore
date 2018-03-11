@@ -12,6 +12,8 @@ Desktop.ini
 .directory
 *~
 
+#vim
+*.swp
 
 # npm
 node_modules
@@ -27,3 +29,4 @@ coverage
 # Environment
 *.env
 *docker-compose.yml
+
