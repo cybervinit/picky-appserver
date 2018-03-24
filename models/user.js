@@ -5,8 +5,9 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
 	username: { type: String, lowercase: true },
 	phone: String,
-	friends: [String],
-	friendRequests: [String]
+	followRequests: [String],
+	followers: [String],
+	following: [String],
 });
 
 module.exports.User = mongoose.model('User', UserSchema);
