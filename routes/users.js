@@ -3,23 +3,25 @@ var router = express.Router();
 var mongoose = require('../config/database.js').mongoose;
 var models = require('../models');
 var basic = require('../config/basic.js');
+var errWrap = basic.errWrap;
 var assert = require('assert');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
 	const { User } = models;
 	const { errHandler } = basic;
-	res.end("Creating... done. :)");
+	// res.end("Reached USERS endpoint.");
+	res.end("GET /users");
 });
 
-router.post('/registerUser', (req, res, next) => {
+router.post('/registerUser', async (req, res, next) => {
 	const { User } = models;
 	const { errHandler } = basic;
-	User.create({ username: "cybervinit", phone: "4161231234" }, errHandler);
+	await User.create({ username: "cybervinit", phone: "4161231234" }, errHandler);
 	res.end('CREATE User');
 });
 
-router.get('/getByUsername/:username', async (req, res, next) => {
+router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
 	const { User } = models;
 	var username = req.params.username;
 	var user = await User.findOne({ 'username': username });
@@ -34,7 +36,7 @@ router.get('/getByUsername/:username', async (req, res, next) => {
 
 	res.setHeader('Content-Type', 'application/json');
 	res.end(JSON.stringify(sendable));
-});
+}));
 
 // NOTE: reqSender is the person who wants to follow the reqReceiver
 router.post('/sendFollowRequest/:reqSender/:reqReceiver', async (req, res, next) => {
