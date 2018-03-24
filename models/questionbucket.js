@@ -18,4 +18,4 @@ const QuestionBucketSchema = new Schema({
 });
 
 module.exports.QuestionBucket = mongoose.model('QuestionBucket', QuestionBucketSchema);
-;
+
