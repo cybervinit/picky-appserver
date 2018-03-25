@@ -13,5 +13,7 @@ if (process.env.NODE_ENV !== "development") {
 	})
 }
 
+redis = Promise.promisifyAll(redis);
+
 module.exports.mongoose = mongoose;
 module.exports.redis = redis;
