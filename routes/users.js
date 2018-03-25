@@ -3,11 +3,11 @@ var router = express.Router();
 var mongoose = require('../config/database.js').mongoose;
 const { User } = require('../models');
 const { errWrap, errHandler } = require('../config/basic.js');
+const a = require('../helpers/authenticate.js');
 var assert = require('assert');
 
 /* GET users listing. */
 router.get('/', errWrap(async (req, res, next) => {
-	const { User } = models;
 	res.end("GET /users");
 }));
 
@@ -17,6 +17,12 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
 	const newUser = await User.create({ username: req.body.username, phone: req.body.phone }, errHandler);
 	res.end("successful");
 }));
+
+router.get('/setsession', errWrap(async (req, res, next) => {
+	await a.setSessionID("vinso", "vinitsoni");
+	res.end("authenticated.");
+}));
+
 
 router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
 	var username = req.params.username;
