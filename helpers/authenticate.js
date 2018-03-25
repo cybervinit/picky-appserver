@@ -1,5 +1,4 @@
-var Promise = require('bluebird');
-var rClient = Promise.promisifyAll(require('redis').createClient(6379, 'redis'));
+var rClient = require('../config/externals.js').redis;
 var assert = require('assert');
 var bcrypt = require('bcrypt');
 

@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-var mongoose = require('../config/database.js').mongoose;
+var mongoose = require('../config/externals.js').mongoose;
 var models = require('../models');
 var basic = require('../config/basic.js');
 
