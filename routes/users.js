@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var mongoose = require('../config/database.js').mongoose;
+var mongoose = require('../config/externals.js').mongoose;
 const { User } = require('../models');
 const { errWrap, errHandler } = require('../config/basic.js');
 const a = require('../helpers/authenticate.js');
@@ -19,7 +19,7 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
 }));
 
 router.get('/setsession', errWrap(async (req, res, next) => {
-	await a.setSessionID("vinso", "vinitsoni");
+	await a.setSessionID("vinso", "yayaya");
 	res.end("authenticated.");
 }));
 
