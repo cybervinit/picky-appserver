@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var mongoose = require('../config/externals.js').mongoose;
-const { User } = require('../models');
+// var mongoose = require('../config/externals.js').mongoose;
+const { User, QuestionBucket } = require('../models');
 const { errWrap, errHandler } = require('../config/basic.js');
 const a = require('../helpers/authenticate.js');
 var assert = require('assert');
@@ -14,7 +14,9 @@ router.get('/', errWrap(async (req, res, next) => {
 router.post('/registerUser', errWrap(async (req, res, next) => {	
 	assert.notStrictEqual(req.body.username, undefined, "username not provided");
 	assert.notStrictEqual(req.body.phone, undefined, "phone not provided");
-	const newUser = await User.create({ username: req.body.username, phone: req.body.phone }, errHandler);
+	const preexistent = await User.findOne({ username: req.body.username });
+	assert.strictEqual(preexistent, null, "username already exists");
+	await User.create({ username: req.body.username, phone: req.body.phone }, errHandler);
 	res.end("successful");
 }));
 
@@ -42,13 +44,13 @@ router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
 }));
 
 // NOTE: reqSender is the person who wants to follow the reqReceiver
-router.get('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
+router.post('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
 	const sender = await User.findOne({ username: req.params.reqSender });
 	const receiver = await User.findOne({ username: req.params.reqReceiver });
-	assert.notStrictEqual(sender, null, "sender username is bad");
+	assert.notStrictEqual(sender, null, "sender username is bads");
 	assert.notStrictEqual(receiver, null, "receiver username is bad");
-	assert.notStrictEqual(sender, receiver, "asdasd");
-	await User.findOneAndUpdate({ 'username': req.params.receiver}, { $push: { followRequests: req.params.sender }});
+	assert.notStrictEqual(sender, receiver, "can't send yourself a request");
+	await User.update({ username: req.params.reqReceiver}, { $push: { followRequests: req.params.reqSender }});
 	res.end("done.");
 }));
 	
