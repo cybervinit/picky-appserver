@@ -11,6 +11,15 @@ router.get('/', errWrap(async (req, res, next) => {
   res.end('GET /users')
 }))
 
+// TODO: figure out twilio!
+/**
+ * @api {post} /users/registerUser Registers a new user
+ * @apiName RegisterUser
+ * @apiGroup User
+ *
+ * @apiParam {String} username The username of the new user
+ * @apiParam {String} phone The phone number of the new user
+ */
 router.post('/registerUser', errWrap(async (req, res, next) => {
   assert.notStrictEqual(req.body.username, undefined, 'username not provided')
   assert.notStrictEqual(req.body.phone, undefined, 'phone not provided')
