@@ -42,6 +42,8 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
  * @apiParam {String} username The username of the login attempting user
  * @apiParam {String} passwordHash The hashed password of the user
  *
+ * @apiSuccess {String} loginAttemptResult The result status of the login attempt
+ * @apiSuccess {String} sessionID The sessionID to auth other user actions later
  */
 router.post('/login', errWrap(async (req, res, next) => {
   const { username, passwordHash } = req.body
