@@ -1,4 +1,4 @@
-const mongoose = require('../config/database.js').mongoose;
+const mongoose = require('../config/externals.js').mongoose;
 const Schema = mongoose.Schema;
 
 

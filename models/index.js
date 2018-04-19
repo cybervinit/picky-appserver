@@ -1,5 +1,5 @@
 var exports = module.exports = {};
 
 exports.User = require('./user.js').User;
-exports.QuestionBucket = require('./questionbucket.js').QuestionBucket;
-
+exports.Question = require('./question.js').Question;
+exports.QuestionOption = require('./questionoption.js').QuestionOption;
