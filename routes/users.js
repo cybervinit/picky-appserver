@@ -67,31 +67,66 @@ router.post('/login', errWrap(async (req, res, next) => {
 
 /**
  * @api {get} /getByUsername/:username Get user information
+ * @apiName GetByUsername
+ * @apiGroup User
+ *
+ * @apiParam {String} username username of the person
+ *
+ * @apiSuccess {String} username
+ * @apiSuccess {String} _id Mongo's ObjectId
+ * @apiSuccess {String} phone phone number
+ * @apiSuccess {Number}
  */
 router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
-  var username = req.params.username
-  var user = await User.findOne({ 'username': username })
+  const { username } = req.params
+  const user = await User.findOne({ 'username': username })
   assert.notStrictEqual(user, null, 'user not found')
-  var sendable = { 'user': {
+  const sendable = { 'user': {
     'username': user.username,
     '_id': user._id,
     'phone': user.phone,
-    'followRequests': user.followRequests,
-    'followers': user.followers,
-    'following': user.following
+    'followersAmount': user.followers.length,
+    'followingAmount': user.following.length
   }}
-
-  res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify(sendable))
 }))
 
-// NOTE: reqSender is the person who wants to follow the reqReceiver
+/**
+ * @api {get} /users/getPersonalInfo Gets sensitive info
+ * @apiName GetPersonalInfo
+ * @apiGroup User
+ *
+ * @apiParam {String} username username
+ * @apiParam {String} sessionID sessionID for authorization
+ */
+router.get('/getPersonalInfo', errWrap(async (req, res, next) => {
+  const { username } = req.headers
+  const user = await User.findOne({ 'username': username }, { followRequests: 1 })
+  assert.notStrictEqual(user, null, 'user not found')
+  const sendable = { 'user': {
+    'followRequestAmount': user.followRequests.length
+  }}
+  res.end(JSON.stringify(sendable))
+}))
+
+/**
+ * @api {get} /users/sendFollowRequest/:reqSender/:reqReceiver send a follow request
+ * @apiName SendFollowRequest
+ * @apiGroup User
+ *
+ * @apiParam {String} reqSender The username of the person sending the follow request
+ * @apiParam {String} reqReceiver The username of the person receiving request
+ */
 router.post('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
-  const sender = await User.findOne({ username: req.params.reqSender })
-  const receiver = await User.findOne({ username: req.params.reqReceiver })
+  const { reqSender, reqReceiver } = req.params
+  assert.strictEqual(reqSender, req.query.username, 'usernames don\'t match')
+  const sender = await User.findOne({ username: reqSender })
+  const receiver = await User.findOne({ username: reqReceiver }, { followRequests: { $elemMatch: { $in: [reqSender] } } })
   assert.notStrictEqual(sender, null, 'sender username is bads')
-  assert.notStrictEqual(receiver, null, 'receiver username is bad')
+  assert.notStrictEqual(receiver, null, 'receiver username is bad or already received the request')
   assert.notStrictEqual(sender, receiver, "can't send yourself a request")
+  console.log(receiver)
+  assert.strictEqual(0, receiver.followRequests.length, 'already requested')
   await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } })
   res.end('done.')
 }))
