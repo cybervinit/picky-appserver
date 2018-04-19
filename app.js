@@ -4,6 +4,9 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
+const a = require('./helpers/authenticate.js');
+const { errWrap } = require('./config/basic.js');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -14,6 +17,9 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+// TODO: add routes which should be auth'd by the user sessionID
+// const authablePaths = ['/users/getByUsername'];
+const authablePaths = [];
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
@@ -21,6 +27,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(errWrap(async (req, res, next) => {
+	var isAuthablePath = false;
+	for (var i = 0; i < authablePaths.length; i++) {
+		if (req.path.toLowerCase().indexOf(authablePaths[i].toLowerCase()) > -1) {
+			isAuthablePath = true; break;
+		}
+	}
+	if (isAuthablePath) {
+		await a.checkSessionID(req.query.username, req.query.sessionID);
+	}
+	next();
+}));
 
 app.use('/', index);
 app.use('/users', users);
