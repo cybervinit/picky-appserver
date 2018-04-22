@@ -30,3 +30,7 @@ coverage
 *.env
 *docker-compose.yml
 pm2.json
+
+# docs
+apidoc/*
+
