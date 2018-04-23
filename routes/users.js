@@ -1,14 +1,15 @@
-var express = require('express')
-var router = express.Router()
+const express = require('express')
+const router = express.Router()
+const request = require('request')
 const bcrypt = require('bcrypt')
-// var mongoose = require('../config/externals.js').mongoose;
 const { User } = require('../models')
-const { errWrap, errHandler } = require('../config/basic.js')
+const { errWrap, errHandler, end, reqLog } = require('../config/basic.js')
 const a = require('../helpers/authenticate.js')
 var assert = require('assert')
 
 /* GET users listing. */
 router.get('/', errWrap(async (req, res, next) => {
+  reqLog(req)
   res.end('GET /users')
 }))
 
@@ -23,6 +24,7 @@ router.get('/', errWrap(async (req, res, next) => {
  * @apiParam {String} passwordHash The passwordHash of the new user
  */
 router.post('/registerUser', errWrap(async (req, res, next) => {
+  req.log(req)
   const { username, phone, passwordHash } = req.body
   assert.notStrictEqual(username, undefined, 'username not provided')
   assert.notStrictEqual(phone, undefined, 'phone not provided')
@@ -46,6 +48,7 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
  * @apiSuccess {String} sessionID The sessionID to auth other user actions later
  */
 router.post('/login', errWrap(async (req, res, next) => {
+  reqLog(req)
   const { username, passwordHash } = req.body
   const user = await User.findOne({ username: username })
   if (user) {
@@ -78,6 +81,7 @@ router.post('/login', errWrap(async (req, res, next) => {
  * @apiSuccess {Number}
  */
 router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
+  reqLog(req)
   const { username } = req.params
   const user = await User.findOne({ 'username': username })
   assert.notStrictEqual(user, null, 'user not found')
@@ -92,6 +96,22 @@ router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
 }))
 
 /**
+ * @api {get} /users/usernameAvailable/:username Gets if the username is available
+ * @apiName UsernameAvailable
+ * @apiGroup User
+ *
+ * @apiParam {String} username
+ * @apiSuccess {Boolean} isAvailable true if the username is available, else false
+ */
+router.get('/usernameAvailable/:username', async (req, res, next) => {
+  reqLog(req)
+  const { username } = req.params
+  const user = await User.find({ username: username }).limit(1)
+  const resp = { isAvailable: (user.length === 0) }
+  return end(res, resp)
+})
+
+/**
  * @api {get} /users/getPersonalInfo Gets sensitive info
  * @apiName GetPersonalInfo
  * @apiGroup User
@@ -100,6 +120,7 @@ router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
  * @apiParam {String} sessionID sessionID for authorization
  */
 router.get('/getPersonalInfo', errWrap(async (req, res, next) => {
+  reqLog(req)
   const { username } = req.headers
   const user = await User.findOne({ 'username': username }, { followRequests: 1 })
   assert.notStrictEqual(user, null, 'user not found')
@@ -118,6 +139,7 @@ router.get('/getPersonalInfo', errWrap(async (req, res, next) => {
  * @apiParam {String} reqReceiver The username of the person receiving request
  */
 router.post('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
+  reqLog(req)
   const { reqSender, reqReceiver } = req.params
   assert.strictEqual(reqSender, req.query.username, 'usernames don\'t match')
   const sender = await User.findOne({ username: reqSender })
@@ -130,5 +152,78 @@ router.post('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, re
   await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } })
   res.end('done.')
 }))
+
+// Twilio SMS Verify -------------
+
+/**
+ * @api {post} /users/requestPhoneVerification requests a phone verification from the Twilio API
+ * @apiName RequestPhoneVerification
+ * @apiGroup User
+ *
+ * @apiParam {String} phoneNumber the phone number for which to request phone verification (format: xxx-xxx-xxxx OR xxxxxxxxxx)
+ * @apiParam {String} countryCode the country code for the phone number (Can and US: 1)
+ * @apiParam {String} via the type of verification requested ('sms' or 'call')
+ */
+router.post('/requestPhoneVerification', async (req, res, next) => {
+  reqLog(req)
+  const { phoneNumber, via, countryCode } = req.body
+  const body = {
+    phone_number: phoneNumber,
+    country_code: countryCode,
+    via: via
+  }
+  return res.end('Safe Lock [Remove for functionality]')
+  /* eslint-disable */
+  request({
+    method: 'POST',
+    url: 'https://api.authy.com/protected/json/phones/verification/start',
+    json: true,
+    headers: {
+      'X-Authy-API-Key': process.env.TWILIO_API_KEY
+    },
+    body: body
+  }, (err, respHttpCode, body) => {
+    if (err) {
+      return console.error('upload failed:', err)
+    }
+    return end(res, body)
+  })
+  /* eslint-disable */
+})
+
+/**
+ * @api {get{ /users/verifyPhoneToken verifies the token the user entered in
+ * @apiName VerifyPhoneToken
+ * @apiGroup User
+ *
+ * @apiParam {String} verifyToken the token the user has entered in
+ * @apiParam {String} phoneNumber the user's phone number (xxx-xxx-xxxx or xxxxxxxxxx)
+ * @apiParam {String} countryCode the country code of the user's phone number
+ *
+ */
+router.get('/verifyPhoneToken', async (req, res, next) => {
+  reqLog(req)
+  const { verifyToken, countryCode, phoneNumber } = req.query
+  return res.end("Safe Lock [Remove for functionality]"); // eslint-disable-line
+  /* eslint-disable */
+  request({
+    method: 'GET',
+    url: 'https://api.authy.com/protected/json/phones/verification/check',
+    headers: {
+      'X-Authy-API-Key': process.env.TWILIO_API_KEY
+    },
+    qs: {
+      verification_code: verifyToken,
+      country_code: countryCode,
+      phone_number: phoneNumber
+    }
+  }, (err, respHttpCode, body) => {
+    if (err) {
+      console.error('verification check failed', err)
+    }
+    res.end(body)
+  })
+  /* eslint-disable */
+})
 
 module.exports = router
