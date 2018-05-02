@@ -1,13 +1,15 @@
-var express = require('express')
-var router = express.Router()
-// var mongoose = require('../config/externals.js').mongoose;
+const express = require('express')
+const router = express.Router()
+const request = require('request')
+const bcrypt = require('bcrypt')
 const { User } = require('../models')
-const { errWrap, errHandler } = require('../config/basic.js')
+const { errWrap, errHandler, end, reqLog } = require('../config/basic.js')
 const a = require('../helpers/authenticate.js')
 var assert = require('assert')
 
 /* GET users listing. */
 router.get('/', errWrap(async (req, res, next) => {
+  reqLog(req)
   res.end('GET /users')
 }))
 
@@ -19,47 +21,209 @@ router.get('/', errWrap(async (req, res, next) => {
  *
  * @apiParam {String} username The username of the new user
  * @apiParam {String} phone The phone number of the new user
+ * @apiParam {String} passwordHash The passwordHash of the new user
  */
 router.post('/registerUser', errWrap(async (req, res, next) => {
-  assert.notStrictEqual(req.body.username, undefined, 'username not provided')
-  assert.notStrictEqual(req.body.phone, undefined, 'phone not provided')
-  const preexistent = await User.findOne({ username: req.body.username })
+  req.log(req)
+  const { username, phone, passwordHash } = req.body
+  assert.notStrictEqual(username, undefined, 'username not provided')
+  assert.notStrictEqual(phone, undefined, 'phone not provided')
+  const preexistent = await User.findOne({ username: username })
   assert.strictEqual(preexistent, null, 'username already exists')
-  await User.create({ username: req.body.username, phone: req.body.phone }, errHandler)
+  const finalPasswordHash = await bcrypt.hash(passwordHash, 4) // Salt rounds 4
+  console.log(finalPasswordHash)
+  await User.create({ username: username, phone: phone, passwordHash: finalPasswordHash }, errHandler)
   res.end('successful')
 }))
 
-router.get('/setsession', errWrap(async (req, res, next) => {
-  await a.setSessionID('vinso', 'yayaya')
-  res.end('authenticated.')
+/**
+ * @api {post} /users/login Login a user
+ * @apiName Login
+ * @apiGroup User
+ *
+ * @apiParam {String} username The username of the login attempting user
+ * @apiParam {String} passwordHash The hashed password of the user
+ *
+ * @apiSuccess {String} loginAttemptResult The result status of the login attempt
+ * @apiSuccess {String} sessionID The sessionID to auth other user actions later
+ */
+router.post('/login', errWrap(async (req, res, next) => {
+  reqLog(req)
+  const { username, passwordHash } = req.body
+  const user = await User.findOne({ username: username })
+  if (user) {
+    const sessId = await a.setSessionID(username) // Also returns the session ID
+    bcrypt.compare(passwordHash, user.passwordHash, (err, result) => {
+      if (err) return res.end(JSON.stringify({ loginAttemptResult: 'fail' }))
+      if (result === true) {
+        return res.end(JSON.stringify({
+          loginAttemptResult: 'success',
+          sessionID: sessId
+        }))
+      }
+      return res.end(JSON.stringify({
+        loginAttemptResult: 'fail'
+      }))
+    })
+  }
 }))
 
+/**
+ * @api {get} /getByUsername/:username Get user information
+ * @apiName GetByUsername
+ * @apiGroup User
+ *
+ * @apiParam {String} username username of the person
+ *
+ * @apiSuccess {String} username
+ * @apiSuccess {String} _id Mongo's ObjectId
+ * @apiSuccess {String} phone phone number
+ * @apiSuccess {Number}
+ */
 router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
-  var username = req.params.username
-  var user = await User.findOne({ 'username': username })
+  reqLog(req)
+  const { username } = req.params
+  const user = await User.findOne({ 'username': username })
   assert.notStrictEqual(user, null, 'user not found')
-  var sendable = { 'user': {
+  const sendable = { 'user': {
     'username': user.username,
     '_id': user._id,
     'phone': user.phone,
-    'followRequests': user.followRequests,
-    'followers': user.followers,
-    'following': user.following
+    'followersAmount': user.followers.length,
+    'followingAmount': user.following.length
   }}
-
-  res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify(sendable))
 }))
 
-// NOTE: reqSender is the person who wants to follow the reqReceiver
+/**
+ * @api {get} /users/usernameAvailable/:username Gets if the username is available
+ * @apiName UsernameAvailable
+ * @apiGroup User
+ *
+ * @apiParam {String} username
+ * @apiSuccess {Boolean} isAvailable true if the username is available, else false
+ */
+router.get('/usernameAvailable/:username', async (req, res, next) => {
+  reqLog(req)
+  const { username } = req.params
+  const user = await User.find({ username: username }).limit(1)
+  const resp = { isAvailable: (user.length === 0) }
+  return end(res, resp)
+})
+
+/**
+ * @api {get} /users/getPersonalInfo Gets sensitive info
+ * @apiName GetPersonalInfo
+ * @apiGroup User
+ *
+ * @apiParam {String} username username
+ * @apiParam {String} sessionID sessionID for authorization
+ */
+router.get('/getPersonalInfo', errWrap(async (req, res, next) => {
+  reqLog(req)
+  const { username } = req.headers
+  const user = await User.findOne({ 'username': username }, { followRequests: 1 })
+  assert.notStrictEqual(user, null, 'user not found')
+  const sendable = { 'user': {
+    'followRequestAmount': user.followRequests.length
+  }}
+  res.end(JSON.stringify(sendable))
+}))
+
+/**
+ * @api {get} /users/sendFollowRequest/:reqSender/:reqReceiver send a follow request
+ * @apiName SendFollowRequest
+ * @apiGroup User
+ *
+ * @apiParam {String} reqSender The username of the person sending the follow request
+ * @apiParam {String} reqReceiver The username of the person receiving request
+ */
 router.post('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
-  const sender = await User.findOne({ username: req.params.reqSender })
-  const receiver = await User.findOne({ username: req.params.reqReceiver })
+  reqLog(req)
+  const { reqSender, reqReceiver } = req.params
+  assert.strictEqual(reqSender, req.query.username, 'usernames don\'t match')
+  const sender = await User.findOne({ username: reqSender })
+  const receiver = await User.findOne({ username: reqReceiver }, { followRequests: { $elemMatch: { $in: [reqSender] } } })
   assert.notStrictEqual(sender, null, 'sender username is bads')
-  assert.notStrictEqual(receiver, null, 'receiver username is bad')
+  assert.notStrictEqual(receiver, null, 'receiver username is bad or already received the request')
   assert.notStrictEqual(sender, receiver, "can't send yourself a request")
+  console.log(receiver)
+  assert.strictEqual(0, receiver.followRequests.length, 'already requested')
   await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } })
   res.end('done.')
 }))
+
+// Twilio SMS Verify -------------
+
+/**
+ * @api {post} /users/requestPhoneVerification requests a phone verification from the Twilio API
+ * @apiName RequestPhoneVerification
+ * @apiGroup User
+ *
+ * @apiParam {String} phoneNumber the phone number for which to request phone verification (format: xxx-xxx-xxxx OR xxxxxxxxxx)
+ * @apiParam {String} countryCode the country code for the phone number (Can and US: 1)
+ * @apiParam {String} via the type of verification requested ('sms' or 'call')
+ */
+router.post('/requestPhoneVerification', async (req, res, next) => {
+  reqLog(req)
+  const { phoneNumber, via, countryCode } = req.body
+  const body = {
+    phone_number: phoneNumber,
+    country_code: countryCode,
+    via: via
+  }
+  return res.end('Safe Lock [Remove for functionality]')
+  /* eslint-disable */
+  request({
+    method: 'POST',
+    url: 'https://api.authy.com/protected/json/phones/verification/start',
+    json: true,
+    headers: {
+      'X-Authy-API-Key': process.env.TWILIO_API_KEY
+    },
+    body: body
+  }, (err, respHttpCode, body) => {
+    if (err) {
+      return console.error('upload failed:', err)
+    }
+    return end(res, body)
+  })
+  /* eslint-disable */
+})
+
+/**
+ * @api {get{ /users/verifyPhoneToken verifies the token the user entered in
+ * @apiName VerifyPhoneToken
+ * @apiGroup User
+ *
+ * @apiParam {String} verifyToken the token the user has entered in
+ * @apiParam {String} phoneNumber the user's phone number (xxx-xxx-xxxx or xxxxxxxxxx)
+ * @apiParam {String} countryCode the country code of the user's phone number
+ *
+ */
+router.get('/verifyPhoneToken', async (req, res, next) => {
+  reqLog(req)
+  const { verifyToken, countryCode, phoneNumber } = req.query
+  return res.end("Safe Lock [Remove for functionality]"); // eslint-disable-line
+  /* eslint-disable */
+  request({
+    method: 'GET',
+    url: 'https://api.authy.com/protected/json/phones/verification/check',
+    headers: {
+      'X-Authy-API-Key': process.env.TWILIO_API_KEY
+    },
+    qs: {
+      verification_code: verifyToken,
+      country_code: countryCode,
+      phone_number: phoneNumber
+    }
+  }, (err, respHttpCode, body) => {
+    if (err) {
+      console.error('verification check failed', err)
+    }
+    res.end(body)
+  })
+  /* eslint-disable */
+})
 
 module.exports = router

@@ -1,66 +1,69 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var _ = require('underscore');
-const a = require('./helpers/authenticate.js');
-const { errWrap } = require('./config/basic.js');
+var express = require('express')
+var path = require('path')
+// var favicon = require('serve-favicon')
+var logger = require('morgan')
+var cookieParser = require('cookie-parser')
+var bodyParser = require('body-parser')
+// var _ = require('underscore')
+const a = require('./helpers/authenticate.js')
+const { errWrap } = require('./config/basic.js')
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-var questions  = require('./routes/questions');
+var index = require('./routes/index')
+var users = require('./routes/users')
+var questions = require('./routes/questions')
 
-var app = express();
+var app = express()
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'))
+app.set('view engine', 'pug')
 
 // TODO: add routes which should be auth'd by the user sessionID
-// const authablePaths = ['/users/getByUsername'];
-const authablePaths = [];
+const authablePaths = [
+  '/users/getByUsername',
+  '/users/getPersonalInfo',
+  '/users/sendFollowRequest'
+]
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(logger('dev'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, 'public')))
 app.use(errWrap(async (req, res, next) => {
-	var isAuthablePath = false;
-	for (var i = 0; i < authablePaths.length; i++) {
-		if (req.path.toLowerCase().indexOf(authablePaths[i].toLowerCase()) > -1) {
-			isAuthablePath = true; break;
-		}
-	}
-	if (isAuthablePath) {
-		await a.checkSessionID(req.query.username, req.query.sessionID);
-	}
-	next();
-}));
+  // NOTE: For session Authorization, need username and sessionID in QUERY! ?username=...&sessionID=...
+  var isAuthablePath = false
+  for (var i = 0; i < authablePaths.length; i++) {
+    if (req.path.toLowerCase().indexOf(authablePaths[i].toLowerCase()) > -1) {
+      isAuthablePath = true; break
+    }
+  }
+  if (isAuthablePath) {
+    await a.checkSessionID(req.query.username, req.query.sessionID)
+  }
+  next()
+}))
 
-app.use('/', index);
-app.use('/users', users);
-app.use('/questions', questions);
+app.use('/', index)
+app.use('/users', users)
+app.use('/questions', questions)
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-	var err = new Error('Not Found');
-	err.status = 404;
-	next(err);
-});
+app.use(function (req, res, next) {
+  var err = new Error('Not Found')
+  err.status = 404
+  next(err)
+})
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.message = err.message
+  res.locals.error = req.app.get('env') === 'development' ? err : {}
 
   // render the error
-  res.status(err.status || 500);
-  res.end(err.toString());
-});
+  res.status(err.status || 500)
+  res.end(err.toString())
+})
 
-module.exports = app;
-
+module.exports = app
