@@ -18,8 +18,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // TODO: add routes which should be auth'd by the user sessionID
-const authablePaths = ['/users/getByUsername'];
-
+// const authablePaths = ['/users/getByUsername'];
+const authablePaths = [];
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));

@@ -1,57 +1,65 @@
-var express = require('express');
-var router = express.Router();
-var mongoose = require('../config/externals.js').mongoose;
-const { User } = require('../models');
-const { errWrap, errHandler } = require('../config/basic.js');
-const a = require('../helpers/authenticate.js');
-var assert = require('assert');
+var express = require('express')
+var router = express.Router()
+// var mongoose = require('../config/externals.js').mongoose;
+const { User } = require('../models')
+const { errWrap, errHandler } = require('../config/basic.js')
+const a = require('../helpers/authenticate.js')
+var assert = require('assert')
 
 /* GET users listing. */
 router.get('/', errWrap(async (req, res, next) => {
-	res.end("GET /users");
-}));
+  res.end('GET /users')
+}))
 
-router.post('/registerUser', errWrap(async (req, res, next) => {	
-	assert.notStrictEqual(req.body.username, undefined, "username not provided");
-	assert.notStrictEqual(req.body.phone, undefined, "phone not provided");
-	const newUser = await User.create({ username: req.body.username, phone: req.body.phone }, errHandler);
-	res.end("successful");
-}));
+// TODO: figure out twilio!
+/**
+ * @api {post} /users/registerUser Registers a new user
+ * @apiName RegisterUser
+ * @apiGroup User
+ *
+ * @apiParam {String} username The username of the new user
+ * @apiParam {String} phone The phone number of the new user
+ */
+router.post('/registerUser', errWrap(async (req, res, next) => {
+  assert.notStrictEqual(req.body.username, undefined, 'username not provided')
+  assert.notStrictEqual(req.body.phone, undefined, 'phone not provided')
+  const preexistent = await User.findOne({ username: req.body.username })
+  assert.strictEqual(preexistent, null, 'username already exists')
+  await User.create({ username: req.body.username, phone: req.body.phone }, errHandler)
+  res.end('successful')
+}))
 
 router.get('/setsession', errWrap(async (req, res, next) => {
-	await a.setSessionID("vinso", "yayaya");
-	res.end("authenticated.");
-}));
-
+  await a.setSessionID('vinso', 'yayaya')
+  res.end('authenticated.')
+}))
 
 router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
-	var username = req.params.username;
-	var user = await User.findOne({ 'username': username });
-	assert.notStrictEqual(user, null, "user not found");
-	var sendable = { 'user': {
-		'username': user.username,
-		'_id': user._id,
-		'phone': user.phone,
-		'followRequests': user.followRequests,
-		'followers': user.followers,
-		'following': user.following
-	}};
+  var username = req.params.username
+  var user = await User.findOne({ 'username': username })
+  assert.notStrictEqual(user, null, 'user not found')
+  var sendable = { 'user': {
+    'username': user.username,
+    '_id': user._id,
+    'phone': user.phone,
+    'followRequests': user.followRequests,
+    'followers': user.followers,
+    'following': user.following
+  }}
 
-	res.setHeader('Content-Type', 'application/json');
-	res.end(JSON.stringify(sendable));
-}));
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify(sendable))
+}))
 
 // NOTE: reqSender is the person who wants to follow the reqReceiver
-router.get('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
-	const sender = await User.findOne({ username: req.params.reqSender });
-	const receiver = await User.findOne({ username: req.params.reqReceiver });
-	assert.notStrictEqual(sender, null, "sender username is bad");
-	assert.notStrictEqual(receiver, null, "receiver username is bad");
-	assert.notStrictEqual(sender, receiver, "asdasd");
-	await User.findOneAndUpdate({ 'username': req.params.receiver}, { $push: { followRequests: req.params.sender }});
-	res.end("done.");
-}));
-	
+router.post('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
+  const sender = await User.findOne({ username: req.params.reqSender })
+  const receiver = await User.findOne({ username: req.params.reqReceiver })
+  assert.notStrictEqual(sender, null, 'sender username is bads')
+  assert.notStrictEqual(receiver, null, 'receiver username is bad')
+  assert.notStrictEqual(sender, receiver, "can't send yourself a request")
+  await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } })
+  res.end('done.')
+}))
 
-module.exports = router;
-
+module.exports = router
