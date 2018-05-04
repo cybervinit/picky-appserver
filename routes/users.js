@@ -24,7 +24,7 @@ router.get('/', errWrap(async (req, res, next) => {
  * @apiParam {String} passwordHash The passwordHash of the new user
  */
 router.post('/registerUser', errWrap(async (req, res, next) => {
-  req.log(req)
+  reqLog(req)
   const { username, phone, passwordHash } = req.body
   assert.notStrictEqual(username, undefined, 'username not provided')
   assert.notStrictEqual(phone, undefined, 'phone not provided')
@@ -44,25 +44,27 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
  * @apiParam {String} username The username of the login attempting user
  * @apiParam {String} passwordHash The hashed password of the user
  *
- * @apiSuccess {String} loginAttemptResult The result status of the login attempt
+ * @apiSuccess {String} errorValue The result status of the login attempt (not 'success' if failed)
  * @apiSuccess {String} sessionID The sessionID to auth other user actions later
  */
 router.post('/login', errWrap(async (req, res, next) => {
   reqLog(req)
   const { username, passwordHash } = req.body
+  assert.notStrictEqual(username, undefined, 'username undefined')
+  assert.notStrictEqual(passwordHash, undefined, 'password undefined')
   const user = await User.findOne({ username: username })
   if (user) {
     const sessId = await a.setSessionID(username) // Also returns the session ID
     bcrypt.compare(passwordHash, user.passwordHash, (err, result) => {
-      if (err) return res.end(JSON.stringify({ loginAttemptResult: 'fail' }))
+      if (err) return res.end(JSON.stringify({ errorValue: 'fail' }))
       if (result === true) {
         return res.end(JSON.stringify({
-          loginAttemptResult: 'success',
+          errorValue: 'success',
           sessionID: sessId
         }))
       }
       return res.end(JSON.stringify({
-        loginAttemptResult: 'fail'
+        errorValue: 'fail'
       }))
     })
   }
@@ -83,16 +85,18 @@ router.post('/login', errWrap(async (req, res, next) => {
 router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
   reqLog(req)
   const { username } = req.params
+  assert.notStrictEqual(username, undefined, 'username undefined')
   const user = await User.findOne({ 'username': username })
-  assert.notStrictEqual(user, null, 'user not found')
-  const sendable = { 'user': {
-    'username': user.username,
-    '_id': user._id,
-    'phone': user.phone,
-    'followersAmount': user.followers.length,
-    'followingAmount': user.following.length
-  }}
-  res.end(JSON.stringify(sendable))
+  if (user && user.profileVisible) {
+    const sendable = { 'user': {
+      'username': user.username,
+      'name': user.name,
+      '_id': user._id,
+      'followersAmount': user.followers.length,
+      'followingAmount': user.following.length
+    }}
+    res.end(JSON.stringify(sendable))
+  }
 }))
 
 /**
@@ -122,10 +126,12 @@ router.get('/usernameAvailable/:username', async (req, res, next) => {
 router.get('/getPersonalInfo', errWrap(async (req, res, next) => {
   reqLog(req)
   const { username } = req.headers
+  assert.notStrictEqual(username, undefined, 'username undefined')
   const user = await User.findOne({ 'username': username }, { followRequests: 1 })
   assert.notStrictEqual(user, null, 'user not found')
   const sendable = { 'user': {
-    'followRequestAmount': user.followRequests.length
+    'followRequestAmount': user.followRequests.length,
+    'phone': user.phone
   }}
   res.end(JSON.stringify(sendable))
 }))
