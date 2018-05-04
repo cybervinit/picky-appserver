@@ -3,11 +3,13 @@ const Schema = mongoose.Schema
 
 const UserSchema = new Schema({
   username: { type: String, lowercase: true },
+  name: { type: String, lowercase: true },
   phone: String,
   passwordHash: String,
   followRequests: [String],
   followers: [String],
-  following: [String]
+  following: [String],
+  profileVisible: { type: Boolean, default: false }
 })
 
 module.exports.User = mongoose.model('User', UserSchema)
