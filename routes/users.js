@@ -6,6 +6,7 @@ const { User } = require('../models')
 const { errWrap, errHandler, end, reqLog } = require('../config/basic.js')
 const a = require('../helpers/authenticate.js')
 var assert = require('assert')
+const passport = require('passport')
 
 /* GET users listing. */
 router.get('/', errWrap(async (req, res, next) => {
@@ -33,7 +34,7 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
   const finalPasswordHash = await bcrypt.hash(passwordHash, 4) // Salt rounds 4
   console.log(finalPasswordHash)
   await User.create({ username: username, phone: phone, passwordHash: finalPasswordHash }, errHandler)
-  res.end('successful')
+  end(res, { message: 'success' })
 }))
 
 /**
@@ -44,30 +45,25 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
  * @apiParam {String} username The username of the login attempting user
  * @apiParam {String} passwordHash The hashed password of the user
  *
- * @apiSuccess {String} errorValue The result status of the login attempt (not 'success' if failed)
+ * @apiSuccess {String} message The result status of the login attempt (not 'success' if failed)
  * @apiSuccess {String} sessionID The sessionID to auth other user actions later
  */
-router.post('/login', errWrap(async (req, res, next) => {
+router.post('/login', passport.authenticate('local', { session: true }), errWrap(async (req, res, next) => {
   reqLog(req)
-  const { username, passwordHash } = req.body
-  assert.notStrictEqual(username, undefined, 'username undefined')
-  assert.notStrictEqual(passwordHash, undefined, 'password undefined')
-  const user = await User.findOne({ username: username })
-  if (user) {
-    const sessId = await a.setSessionID(username) // Also returns the session ID
-    bcrypt.compare(passwordHash, user.passwordHash, (err, result) => {
-      if (err) return res.end(JSON.stringify({ errorValue: 'fail' }))
-      if (result === true) {
-        return res.end(JSON.stringify({
-          errorValue: 'success',
-          sessionID: sessId
-        }))
-      }
-      return res.end(JSON.stringify({
-        errorValue: 'fail'
-      }))
-    })
-  }
+  return end(res, { message: 'success' })
+}))
+
+/**
+ * @api {post} /users/logout Logs out a user
+ * @apiName Logout
+ * @apiGroup User
+ *
+ */
+router.post('/logout', a.auth, errWrap(async (req, res, next) => {
+  req.session.destroy(function (err) {
+    if (err) return end(res, { message: err.toString() })
+    end(res, { message: 'success' })
+  })
 }))
 
 /**
@@ -97,6 +93,7 @@ router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
     }}
     res.end(JSON.stringify(sendable))
   }
+  end(res, { message: 'fail' })
 }))
 
 /**
@@ -107,25 +104,23 @@ router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
  * @apiParam {String} username
  * @apiSuccess {Boolean} isAvailable true if the username is available, else false
  */
-router.get('/usernameAvailable/:username', async (req, res, next) => {
+router.get('/usernameAvailable/:username', errWrap(async (req, res, next) => {
   reqLog(req)
   const { username } = req.params
   const user = await User.find({ username: username }).limit(1)
   const resp = { isAvailable: (user.length === 0) }
   return end(res, resp)
-})
+}))
 
 /**
  * @api {get} /users/getPersonalInfo Gets sensitive info
  * @apiName GetPersonalInfo
  * @apiGroup User
- *
- * @apiParam {String} username username
- * @apiParam {String} sessionID sessionID for authorization
  */
-router.get('/getPersonalInfo', errWrap(async (req, res, next) => {
+router.get('/getPersonalInfo', a.auth, errWrap(async (req, res, next) => {
   reqLog(req)
-  const { username } = req.headers
+  console.log(req.session)
+  const { username } = req.session.passport.user
   assert.notStrictEqual(username, undefined, 'username undefined')
   const user = await User.findOne({ 'username': username }, { followRequests: 1 })
   assert.notStrictEqual(user, null, 'user not found')
