@@ -53,7 +53,12 @@ router.post('/login', passport.authenticate('local', { session: true }), errWrap
   return end(res, { message: 'success' })
 }))
 
-// TODO: document
+/**
+ * @api {post} /users/logout Logs out a user
+ * @apiName Logout
+ * @apiGroup User
+ *
+ */
 router.post('/logout', a.auth, errWrap(async (req, res, next) => {
   req.session.destroy(function (err) {
     if (err) return end(res, { message: err.toString() })
