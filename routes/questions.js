@@ -33,7 +33,7 @@ router.post('/createPublicQuestion', errWrap(async (req, res, next) => {
   }
   const newQuestion = { username: req.body.username, title: req.body.question.title, options: optList, visibility: req.body.question.visibility }
   await Question.create(newQuestion)
-  res.end('successful.')
+  res.end({ message: 'success' })
 }))
 
 /**
@@ -57,7 +57,7 @@ const option = req.body.optionIndex;
     picker: req.body.picker,
     optionId: ObjectId(req.body.optionId)
   })
-  res.end('successful.')
+  res.end({ message: 'success' })
 }))
 
 module.exports = router
