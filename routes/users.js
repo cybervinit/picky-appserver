@@ -132,15 +132,16 @@ router.get('/getPersonalInfo', a.auth, errWrap(async (req, res, next) => {
 }))
 
 /**
- * @api {get} /users/sendFollowRequest/:reqSender/:reqReceiver send a follow request
+ * @api {post} /users/sendFollowRequest/:reqSender/:reqReceiver send a follow request
  * @apiName SendFollowRequest
  * @apiGroup User
  *
  * @apiParam {String} reqSender The username of the person sending the follow request
  * @apiParam {String} reqReceiver The username of the person receiving request
  */
-router.post('/sendFollowRequest/:reqSender/:reqReceiver', errWrap(async (req, res, next) => {
+router.post('/sendFollowRequest/:reqSender/:reqReceiver', a.auth, errWrap(async (req, res, next) => { // TODO: auth
   reqLog(req)
+  console.log('Before the session check')
   const { reqSender, reqReceiver } = req.params
   assert.strictEqual(reqSender, req.query.username, 'usernames don\'t match')
   const sender = await User.findOne({ username: reqSender })

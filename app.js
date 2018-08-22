@@ -54,7 +54,7 @@ passport.deserializeUser((user, done) => {
 
 passport.use(new LocalStrategy({
   usernameField: 'username',
-  passwordField: 'passwordHash'
+  passwordField: 'passwordHash' // Look for the "passwordHash" coming from the client login request.
 },
 (username, passwordHash, done) => {
   console.log('Checking normal login....')
