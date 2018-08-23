@@ -174,7 +174,7 @@ router.post('/requestPhoneVerification', async (req, res, next) => {
     country_code: countryCode,
     via: via
   }
-  return res.end('Safe Lock [Remove for functionality]')
+  // return res.end('Safe Lock [Remove for functionality]')
   /* eslint-disable */
   request({
     method: 'POST',
@@ -206,7 +206,7 @@ router.post('/requestPhoneVerification', async (req, res, next) => {
 router.get('/verifyPhoneToken', async (req, res, next) => {
   reqLog(req)
   const { verifyToken, countryCode, phoneNumber } = req.query
-  return res.end("Safe Lock [Remove for functionality]"); // eslint-disable-line
+  // return res.end("Safe Lock [Remove for functionality]"); // eslint-disable-line
   /* eslint-disable */
   request({
     method: 'GET',
