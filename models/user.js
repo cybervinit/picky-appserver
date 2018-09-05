@@ -9,7 +9,7 @@ const UserSchema = new Schema({
   followRequests: [String],
   followers: [String],
   following: [String],
-  profileVisible: { type: Boolean, default: false }
+  profileVisible: { type: Boolean, default: true }
 })
 
 module.exports.User = mongoose.model('User', UserSchema)

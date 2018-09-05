@@ -32,7 +32,7 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
   const preexistent = await User.findOne({ username: username })
   assert.strictEqual(preexistent, null, 'username already exists')
   const finalPasswordHash = await bcrypt.hash(passwordHash, 4) // Salt rounds 4
-  console.log(finalPasswordHash)
+  console.log(finalPasswordHash) // TODO: remove
   await User.create({ username: username, phone: phone, passwordHash: finalPasswordHash }, errHandler)
   end(res, { message: 'success' })
 }))
@@ -90,10 +90,11 @@ router.get('/getByUsername/:username', errWrap(async (req, res, next) => {
       '_id': user._id,
       'followersAmount': user.followers.length,
       'followingAmount': user.following.length
-    }}
+    },
+    message: 'success' }
     res.end(JSON.stringify(sendable))
   }
-  end(res, { message: 'fail' })
+  end(res, { message: 'user not found' })
 }))
 
 /**
@@ -152,7 +153,7 @@ router.post('/sendFollowRequest/:reqSender/:reqReceiver', a.auth, errWrap(async 
   console.log(receiver)
   assert.strictEqual(0, receiver.followRequests.length, 'already requested')
   await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } })
-  res.end('done.')
+  end(res, { message: 'success' })
 }))
 
 // Twilio SMS Verify -------------

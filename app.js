@@ -114,7 +114,7 @@ app.use(function (err, req, res, next) {
 
   // render the error
   res.status(err.status || 500)
-  res.end(err.toString())
+  res.end({ message: err.toString() })
 })
 
 module.exports = app
