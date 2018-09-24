@@ -7,11 +7,11 @@
  */
 module.exports.auth = (req, res, next) => {
   if (req.isAuthenticated()) {
-    console.log('Authorized for request! :)')
-    return next()
+    console.log('Authorized for request! :)');
+    return next();
   }
-  return res.end(JSON.stringify({ message: 'unauthorized' }))
-}
+  return res.end(JSON.stringify({ message: 'unauthorized' }));
+};
 
 /**
  * DEPRECATED - Use express-session instead
