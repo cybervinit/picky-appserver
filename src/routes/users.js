@@ -28,7 +28,7 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
   /* eslint-disable */
   const { username, phone, passwordHash } = req.body;
   assert(isValidUsername(username), 'username invalid');
-  assert(isPhoneValid(phone), 'phone invalid');
+  assert(isPhoneValid(phone), 'phone number invalid');
   const preexistent = await User.findOne({ username: username });
   assert.strictEqual(preexistent, null, 'username already exists');
   const finalPasswordHash = await bcrypt.hash(passwordHash, 4); // Salt rounds 4
@@ -168,6 +168,7 @@ router.post('/sendFollowRequest/:reqSender/:reqReceiver', a.auth, errWrap(async 
  */
 router.post('/requestPhoneVerification', async (req, res, next) => {
   reqLog(req);
+  assert(isPhoneValid(phoneNumber), 'phone number invalid');
   const { phoneNumber, via, countryCode } = req.body;
   const body = {
     phone_number: phoneNumber,
