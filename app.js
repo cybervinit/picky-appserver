@@ -114,7 +114,6 @@ app.use(function (err, req, res, next) {
 
   // render the error
   res.status(err.status || 500);
-  console.log(err);
   res.end(JSON.stringify({ message: err.message }));
 });
 

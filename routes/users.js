@@ -29,13 +29,8 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
   const { username, phone, passwordHash } = req.body;
   assert(isValidUsername(username), 'username invalid');
   assert(isPhoneValid(phone), 'phone invalid');
-  try {
-    const preexistent = await User.findOne({ username: username });
-    assert.strictEqual(preexistent, null, 'username already exists');
-  } catch (e) {
-    console.log(e);
-  }
-  console.log('Reached 3!');
+  const preexistent = await User.findOne({ username: username });
+  assert.strictEqual(preexistent, null, 'username already exists');
   const finalPasswordHash = await bcrypt.hash(passwordHash, 4); // Salt rounds 4
   await User.create({ username: username, phone: phone, passwordHash: finalPasswordHash }, errHandler);
   end(res, { message: 'success' });

@@ -1,4 +1,5 @@
 const winston = require('winston'); // Logger
+const validator = require('validator');
 
 var errHandler = function (err, obj) {
   if (err) { throw err; }
@@ -26,7 +27,7 @@ const isValidUsername = (username) => {
 };
 
 const isPhoneValid = (phone) => {
-  return phone !== undefined;
+  return (phone !== undefined) && (validator.isMobilePhone(phone, validator.isMobilePhoneLocales, { strictMode: true }));
 };
 
 module.exports.errHandler = errHandler;
