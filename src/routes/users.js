@@ -28,11 +28,24 @@ router.post('/registerUser', errWrap(async (req, res, next) => {
   const { username, phone, passwordHash } = req.body;
   assert(isValidUsername(username), 'username invalid');
   assert(isPhoneValid(phone), 'phone number invalid');
-  const preexistent = await User.findOne({ username: username });
-  assert.strictEqual(preexistent, null, 'username already exists');
   const finalPasswordHash = await bcrypt.hash(passwordHash, 4); // Salt rounds 4
   await User.create({ username: username, phone: phone, passwordHash: finalPasswordHash }, errHandler);
   res.redirect(307, '/users/login');
+}));
+
+/**
+ * @api {get} /users/isUsernameValid Checks if the username is unique and valid
+ * @apiName IsUsernameUnique
+ * @apiGroup User
+ *
+ * @apiParam {String} newUsername The username of the new user
+ */
+router.get('/isUsernameValid', errWrap(async (req, res, next) => {
+  const { newUsername } = req.query;
+  assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
+  const preexistent = await User.findOne({ username: newUsername });
+  assert.strictEqual(preexistent, null, 'username already exists');
+  end(res, { message: 'success' });
 }));
 
 /**
