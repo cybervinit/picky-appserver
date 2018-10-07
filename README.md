@@ -1,4 +1,4 @@
-# Picky - Stick to your Opinion
+# Picky
 
 ## Setup
 
