@@ -16,7 +16,7 @@ router.get('/', (req, res, next) => {
   routeCheck(res, 'questions');
 });
 
-/**
+/** @deprecated
  * @api {post} /questions/createPublicQuestion Create a new public question
  * @apiName CreatePublicQuestion
  * @apiGroup Question
@@ -36,7 +36,7 @@ router.post('/createPublicQuestion', errWrap(async (req, res, next) => {
   res.end({ message: 'success' });
 }));
 
-/**
+/** @deprecated
  * @api {post} /questions/castVote A user can cast a vote on a given question
  * @apiName CastVote
  * @apiGroup Question

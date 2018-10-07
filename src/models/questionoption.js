@@ -1,4 +1,6 @@
-
+/**
+ * @deprecated
+ */
 const mongoose = require('../config/externals.js').mongoose;
 const Schema = mongoose.Schema;
 // const ObjectId = require('mongodb').ObjectID;
