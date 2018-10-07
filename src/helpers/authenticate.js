@@ -1,10 +1,17 @@
 
+/**
+ * @function auth Uses the cookie part of the req to authorize the req (request)
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 module.exports.auth = (req, res, next) => {
   if (req.isAuthenticated()) {
-    return next()
+    console.log('Authorized for request! :)');
+    return next();
   }
-  return res.end(JSON.stringify({ message: 'unauthorized' }))
-}
+  return res.end(JSON.stringify({ message: 'unauthorized' }));
+};
 
 /**
  * DEPRECATED - Use express-session instead

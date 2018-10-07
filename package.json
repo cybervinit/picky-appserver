@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./src/bin/www"
   },
   "dependencies": {
     "apidoc": "^0.17.6",
@@ -24,7 +24,8 @@
     "redis": "^2.8.0",
     "request": "^2.85.0",
     "serve-favicon": "~2.4.5",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "validator": "^10.7.1"
   },
   "devDependencies": {
     "assert": "^1.4.1",

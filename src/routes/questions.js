@@ -1,10 +1,10 @@
-var express = require('express')
-var router = express.Router()
+var express = require('express');
+var router = express.Router();
 
-const { Question, QuestionOption } = require('../models')
-var ObjectId = require('mongodb').ObjectID
-const { errWrap } = require('../config/basic.js')
-var basic = require('../config/basic.js')
+const { Question, QuestionOption } = require('../models');
+var ObjectId = require('mongodb').ObjectID;
+const { errWrap } = require('../config/basic.js');
+var basic = require('../config/basic.js');
 
 /**
  * @api {get} /questions Questions endpoint
@@ -12,11 +12,11 @@ var basic = require('../config/basic.js')
  * @apiGroup Question
  */
 router.get('/', (req, res, next) => {
-  const { routeCheck } = basic
-  routeCheck(res, 'questions')
-})
+  const { routeCheck } = basic;
+  routeCheck(res, 'questions');
+});
 
-/**
+/** @deprecated
  * @api {post} /questions/createPublicQuestion Create a new public question
  * @apiName CreatePublicQuestion
  * @apiGroup Question
@@ -27,16 +27,16 @@ router.get('/', (req, res, next) => {
  * @apiParam {Number} visibility The visibility of the question (anonymous, only asked can see the votes, anyone can see the votes)
  */
 router.post('/createPublicQuestion', errWrap(async (req, res, next) => {
-  var optList = []
+  var optList = [];
   for (let opt in req.body.question.options) {
-    optList.push({ title: req.body.question.options[opt], pickers: [], index: Number(opt) })
+    optList.push({ title: req.body.question.options[opt], pickers: [], index: Number(opt) });
   }
-  const newQuestion = { username: req.body.username, title: req.body.question.title, options: optList, visibility: req.body.question.visibility }
-  await Question.create(newQuestion)
-  res.end({ message: 'success' })
-}))
+  const newQuestion = { username: req.body.username, title: req.body.question.title, options: optList, visibility: req.body.question.visibility };
+  await Question.create(newQuestion);
+  res.end({ message: 'success' });
+}));
 
-/**
+/** @deprecated
  * @api {post} /questions/castVote A user can cast a vote on a given question
  * @apiName CastVote
  * @apiGroup Question
@@ -56,8 +56,8 @@ const option = req.body.optionIndex;
   await QuestionOption.create({
     picker: req.body.picker,
     optionId: ObjectId(req.body.optionId)
-  })
-  res.end({ message: 'success' })
-}))
+  });
+  res.end({ message: 'success' });
+}));
 
-module.exports = router
+module.exports = router;
