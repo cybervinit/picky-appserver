@@ -13,14 +13,12 @@ const bcrypt = require('bcrypt');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const { User } = require('./models');
-var index = require('./routes/index');
+const { SUCCESS_PAYLOAD } = require('./helpers/constants');
+const { errWrap, end } = require('./config/basics');
 var users = require('./routes/users');
 var questions = require('./routes/questions');
 
 var app = express();
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
 // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -95,7 +93,10 @@ app.use(passport.session());
 //   next()
 // }))
 
-app.use('/', index);
+app.use('/', errWrap(async (req, res, next) => {
+  end(res, Object.assign({}, SUCCESS_PAYLOAD, { title: 'Welcome to Picky' }));
+}));
+
 app.use('/users', users);
 app.use('/questions', questions);
 
