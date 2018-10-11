@@ -1,5 +1,3 @@
-var exports = module.exports = {};
+let modelExports = module.exports = {};
 
-exports.User = require('./user.js').User;
-exports.Question = require('./question.js').Question;
-exports.QuestionOption = require('./questionoption.js').QuestionOption;
+modelExports.User = require('./user.js').User;

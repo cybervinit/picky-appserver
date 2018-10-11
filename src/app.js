@@ -1,29 +1,22 @@
-var express = require('express');
+const express = require('express');
 const session = require('express-session'); // Session persistence
 const SessionStore = require('connect-redis')(session); // Session store
 const rClient = require('./config/externals').redis;
-var path = require('path');
-// var favicon = require('serve-favicon')
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var assert = require('assert');
+const path = require('path');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const assert = require('assert');
 const bcrypt = require('bcrypt');
-// var _ = require('underscore')
-var passport = require('passport');
-var LocalStrategy = require('passport-local');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
 const { User } = require('./models');
-var index = require('./routes/index');
-var users = require('./routes/users');
-var questions = require('./routes/questions');
+const { SUCCESS_PAYLOAD } = require('./helpers/constants');
+const { errWrap, end } = require('./config/basic');
+const users = require('./routes/users');
 
-var app = express();
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+const app = express();
 
-// uncomment after placing your favicon in /public
-// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -78,30 +71,18 @@ passport.use(new LocalStrategy({
 ));
 app.use(passport.initialize());
 app.use(passport.session());
+
 // PASSPORT
 
-// DEPRECATED - login sessions
-// app.use(errWrap(async (req, res, next) => {
-//   // NOTE: For session Authorization, need username and sessionID in QUERY! ?username=...&sessionID=...
-//   var isAuthablePath = false
-//   for (var i = 0; i < authablePaths.length; i++) {
-//     if (req.path.toLowerCase().indexOf(authablePaths[i].toLowerCase()) > -1) {
-//       isAuthablePath = true; break
-//     }
-//   }
-//   if (isAuthablePath) {
-//     await a.checkSessionID(req.query.username, req.query.sessionID)
-//   }
-//   next()
-// }))
+app.use('/', errWrap(async (req, res, next) => {
+  end(res, Object.assign({}, SUCCESS_PAYLOAD, { title: 'Welcome to Picky' }));
+}));
 
-app.use('/', index);
 app.use('/users', users);
-app.use('/questions', questions);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  var err = new Error('Not Found');
+  let err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
