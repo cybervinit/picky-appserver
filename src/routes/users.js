@@ -7,6 +7,7 @@ const { errWrap, errHandler, end, reqLog, isValidUsername, isPhoneValid } = requ
 const a = require('../helpers/authenticate.js');
 var assert = require('assert');
 const passport = require('passport');
+const { SUCCESS_PAYLOAD } = require('../helpers/constants');
 
 /* GET users listing. */
 router.get('/', errWrap(async (req, res, next) => {
@@ -45,7 +46,7 @@ router.get('/isUsernameValid', errWrap(async (req, res, next) => {
   assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
   const preexistent = await User.findOne({ username: newUsername });
   assert.strictEqual(preexistent, null, 'username already exists');
-  end(res, { message: 'success' });
+  end(res, SUCCESS_PAYLOAD);
 }));
 
 /**
@@ -61,7 +62,7 @@ router.get('/isUsernameValid', errWrap(async (req, res, next) => {
  */
 router.post('/login', passport.authenticate('local', { session: true }), errWrap(async (req, res, next) => {
   reqLog(req);
-  return end(res, { message: 'success' });
+  return end(res, SUCCESS_PAYLOAD);
 }));
 
 /**
@@ -73,7 +74,7 @@ router.post('/login', passport.authenticate('local', { session: true }), errWrap
 router.post('/logout', a.auth, errWrap(async (req, res, next) => {
   req.session.destroy(function (err) {
     if (err) return end(res, { message: err.toString() });
-    end(res, { message: 'success' });
+    end(res, SUCCESS_PAYLOAD);
   });
 }));
 
@@ -164,7 +165,7 @@ router.post('/sendFollowRequest/:reqSender/:reqReceiver', a.auth, errWrap(async 
   console.log(receiver);
   assert.strictEqual(0, receiver.followRequests.length, 'already requested');
   await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } });
-  end(res, { message: 'success' });
+  end(res, SUCCESS_PAYLOAD);
 }));
 
 // Twilio SMS Verify -------------
