@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const { User } = require('../models');
 const { errWrap, errHandler, end, reqLog, isValidUsername, isPhoneValid } = require('../config/basic.js');
 const a = require('../helpers/authenticate.js');
-var assert = require('assert');
+const assert = require('assert');
 const passport = require('passport');
 const { SUCCESS_PAYLOAD } = require('../helpers/constants');
 

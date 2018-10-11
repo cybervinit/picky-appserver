@@ -1,3 +1,3 @@
-var exports = module.exports = {};
+let modelExports = module.exports = {};
 
-exports.User = require('./user.js').User;
+modelExports.User = require('./user.js').User;
