@@ -1,19 +1,11 @@
 const express = require('express');
-const session = require('express-session'); // Session persistence
-const SessionStore = require('connect-redis')(session); // Session store
-const rClient = require('./config/externals').redis;
 const path = require('path');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
-const assert = require('assert');
-const bcrypt = require('bcrypt');
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
-const { User } = require('./models');
-const { SUCCESS_PAYLOAD } = require('./helpers/constants');
-const { errWrap, end } = require('./config/basic');
 const users = require('./routes/users');
+const auth = require('./routes/authenticate');
 
 const app = express();
 
@@ -23,60 +15,18 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: new SessionStore({
-    client: rClient
-  })
+// PASSPORT
+app.use(cookieSession({
+  maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
+  keys: ['randomstringhere']
 }));
 
-// PASSPORT
-
-passport.serializeUser((user, done) => {
-  console.log('serializing user.... ');
-  done(null, { username: user.username }); // Sends the username to the passport obj inside the session store
-});
-passport.deserializeUser((user, done) => {
-  console.log('Deserialization of: ' + user.username);
-  User.findOne({ username: user.username }, (err, user) => { // Puts the user in the req.user area.
-    done(err, user);
-  });
+app.get('/', (req, res) => {
+  res.send('Welcome to picky!');
 });
 
-passport.use(new LocalStrategy({
-  usernameField: 'username',
-  passwordField: 'passwordHash' // Look for the "passwordHash" coming from the client login request.
-},
-(username, passwordHash, done) => {
-  console.log('Checking normal login....');
-  User.findOne({ username: username }, (err, user) => {
-    if (err) return done(err);
-    assert.notStrictEqual(username, undefined, 'username undefined');
-    assert.notStrictEqual(passwordHash, undefined, 'password undefined');
-    if (!user) return done(null, false, { message: 'cannot find user' });
-    bcrypt.compare(passwordHash, user.passwordHash, (err, result) => {
-      if (err) return done(err);
-      if (result === true) {
-        return done(null, {
-          message: 'success',
-          username: user.username
-        });
-      }
-      return done(null, false, { message: 'wrong password' });
-    });
-  });
-}
-));
-app.use(passport.initialize());
-app.use(passport.session());
-
-// PASSPORT
-
-app.use('/', errWrap(async (req, res, next) => {
-  end(res, Object.assign({}, SUCCESS_PAYLOAD, { title: 'Welcome to Picky' }));
-}));
+// Sets up authorization routes
+auth(app);
 
 app.use('/users', users);
 
