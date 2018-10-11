@@ -1,26 +1,22 @@
-var express = require('express');
+const express = require('express');
 const session = require('express-session'); // Session persistence
 const SessionStore = require('connect-redis')(session); // Session store
 const rClient = require('./config/externals').redis;
-var path = require('path');
-// var favicon = require('serve-favicon')
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var assert = require('assert');
+const path = require('path');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const assert = require('assert');
 const bcrypt = require('bcrypt');
-// var _ = require('underscore')
-var passport = require('passport');
-var LocalStrategy = require('passport-local');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
 const { User } = require('./models');
 const { SUCCESS_PAYLOAD } = require('./helpers/constants');
 const { errWrap, end } = require('./config/basic');
-var users = require('./routes/users');
+const users = require('./routes/users');
 
-var app = express();
+const app = express();
 
-// uncomment after placing your favicon in /public
-// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -86,7 +82,7 @@ app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  var err = new Error('Not Found');
+  let err = new Error('Not Found');
   err.status = 404;
   next(err);
 });

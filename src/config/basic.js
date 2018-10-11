@@ -1,13 +1,13 @@
 const winston = require('winston'); // Logger
 const validator = require('validator');
 
-var errHandler = function (err, obj) {
+let errHandler = function (err, obj) {
   if (err) { throw err; }
 };
 
-var errWrap = (fn) => (...args) => fn(...args).catch(args[2]);
+let errWrap = (fn) => (...args) => fn(...args).catch(args[2]);
 
-var routeCheck = function (res, endpoint) {
+let routeCheck = function (res, endpoint) {
   res.end('Reached: ' + endpoint);
 };
 

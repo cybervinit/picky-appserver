@@ -1,4 +1,4 @@
-var exports = module.exports = {};
+let constantsExports = module.exports = {};
 
-exports.SUCCESS = 'success';
-exports.SUCCESS_PAYLOAD = { message: exports.SUCCESS };
+constantsExports.SUCCESS = 'success';
+constantsExports.SUCCESS_PAYLOAD = { message: constantsExports.SUCCESS };
