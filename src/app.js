@@ -14,9 +14,8 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const { User } = require('./models');
 const { SUCCESS_PAYLOAD } = require('./helpers/constants');
-const { errWrap, end } = require('./config/basics');
+const { errWrap, end } = require('./config/basic');
 var users = require('./routes/users');
-var questions = require('./routes/questions');
 
 var app = express();
 
@@ -76,29 +75,14 @@ passport.use(new LocalStrategy({
 ));
 app.use(passport.initialize());
 app.use(passport.session());
-// PASSPORT
 
-// DEPRECATED - login sessions
-// app.use(errWrap(async (req, res, next) => {
-//   // NOTE: For session Authorization, need username and sessionID in QUERY! ?username=...&sessionID=...
-//   var isAuthablePath = false
-//   for (var i = 0; i < authablePaths.length; i++) {
-//     if (req.path.toLowerCase().indexOf(authablePaths[i].toLowerCase()) > -1) {
-//       isAuthablePath = true; break
-//     }
-//   }
-//   if (isAuthablePath) {
-//     await a.checkSessionID(req.query.username, req.query.sessionID)
-//   }
-//   next()
-// }))
+// PASSPORT
 
 app.use('/', errWrap(async (req, res, next) => {
   end(res, Object.assign({}, SUCCESS_PAYLOAD, { title: 'Welcome to Picky' }));
 }));
 
 app.use('/users', users);
-app.use('/questions', questions);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

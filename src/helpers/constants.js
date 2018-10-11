@@ -1,3 +1,4 @@
+var exports = module.exports = {};
 
-export const SUCCESS = 'success';
-export const SUCCESS_PAYLOAD = { message: SUCCESS };
+exports.SUCCESS = 'success';
+exports.SUCCESS_PAYLOAD = { message: exports.SUCCESS };
