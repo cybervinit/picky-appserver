@@ -34,3 +34,5 @@ pm2.json
 # docs
 apidoc/*
 
+# Webstorm
+.idea

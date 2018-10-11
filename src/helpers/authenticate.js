@@ -1,14 +1,14 @@
-
-/**
- * @function auth Uses the cookie part of the req to authorize the req (request)
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-module.exports.auth = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    console.log('Authorized for request! :)');
-    return next();
+// Middleware to check if the user is authenticated
+const isUserAuthenticated = (req, res, next) => {
+  if (req.user) {
+    next();
+  } else {
+    res.send({
+      message: 'You must login!'
+    });
   }
-  return res.end(JSON.stringify({ message: 'unauthorized' }));
+};
+
+module.exports = {
+  isUserAuthenticated
 };

@@ -4,16 +4,9 @@ const request = require('request');
 const bcrypt = require('bcrypt');
 const { User } = require('../models');
 const { errWrap, errHandler, end, reqLog, isValidUsername, isPhoneValid } = require('../config/basic.js');
-const a = require('../helpers/authenticate.js');
 const assert = require('assert');
-const passport = require('passport');
 const { SUCCESS_PAYLOAD } = require('../helpers/constants');
-
-/* GET users listing. */
-router.get('/', errWrap(async (req, res, next) => {
-  reqLog(req);
-  res.end('GET /users');
-}));
+const authHelper = require('../helpers/authenticate');
 
 /**
  * @api {post} /users/registerUser Registers a new user
@@ -47,35 +40,6 @@ router.get('/isUsernameValid', errWrap(async (req, res, next) => {
   const preexistent = await User.findOne({ username: newUsername });
   assert.strictEqual(preexistent, null, 'username already exists');
   end(res, SUCCESS_PAYLOAD);
-}));
-
-/**
- * @api {post} /users/login Login a user
- * @apiName Login
- * @apiGroup User
- *
- * @apiParam {String} username The username of the login attempting user
- * @apiParam {String} passwordHash The hashed password of the user
- *
- * @apiSuccess {String} message The result status of the login attempt (not 'success' if failed)
- * @apiSuccess {String} sessionID The sessionID to auth other user actions later
- */
-router.post('/login', passport.authenticate('local', { session: true }), errWrap(async (req, res, next) => {
-  reqLog(req);
-  return end(res, SUCCESS_PAYLOAD);
-}));
-
-/**
- * @api {post} /users/logout Logs out a user
- * @apiName Logout
- * @apiGroup User
- *
- */
-router.post('/logout', a.auth, errWrap(async (req, res, next) => {
-  req.session.destroy(function (err) {
-    if (err) return end(res, { message: err.toString() });
-    end(res, SUCCESS_PAYLOAD);
-  });
 }));
 
 /**
@@ -130,7 +94,7 @@ router.get('/usernameAvailable/:username', errWrap(async (req, res, next) => {
  * @apiName GetPersonalInfo
  * @apiGroup User
  */
-router.get('/getPersonalInfo', a.auth, errWrap(async (req, res, next) => {
+router.get('/getPersonalInfo', authHelper.isUserAuthenticated, errWrap(async (req, res, next) => {
   reqLog(req);
   console.log(req.session);
   const { username } = req.session.passport.user;
@@ -152,7 +116,7 @@ router.get('/getPersonalInfo', a.auth, errWrap(async (req, res, next) => {
  * @apiParam {String} reqSender The username of the person sending the follow request
  * @apiParam {String} reqReceiver The username of the person receiving request
  */
-router.post('/sendFollowRequest/:reqSender/:reqReceiver', a.auth, errWrap(async (req, res, next) => { // TODO: auth
+router.post('/sendFollowRequest/:reqSender/:reqReceiver', authHelper.isUserAuthenticated, errWrap(async (req, res, next) => { // TODO: auth
   reqLog(req);
   console.log('Before the session check');
   const { reqSender, reqReceiver } = req.params;
