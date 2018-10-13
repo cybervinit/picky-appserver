@@ -10,7 +10,7 @@ module.exports = (app) => {
   passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: 'http://localhost:9000/auth/google/callback'
+    callbackURL: `${process.env.HOST}/auth/google/callback`
   },
   (accessToken, refreshToken, profile, done) => {
     done(null, profile); // passes the profile data to serializeUser
@@ -19,7 +19,6 @@ module.exports = (app) => {
 
   // Used to stuff a piece of information into a cookie
   passport.serializeUser((user, done) => {
-    console.log(JSON.stringify(user, undefined, 2));
     done(null, user);
   });
 
