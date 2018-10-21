@@ -4,14 +4,26 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 const users = require('./routes/users');
 const auth = require('./routes/authenticate');
+
+mongoose.connect(process.env.PICKY_DB_URL || 'mongodb://localhost/test', { useNewUrlParser: true });
+mongoose.Promise = global.Promise;
+
+const db = mongoose.connection;
+
+db.once('open', () => {
+  console.log('Connected to MongoDB');
+});
+
+db.on('error', (err) => console.log);
 
 const app = express();
 
 app.use(logger('dev'));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -27,7 +39,7 @@ app.get('/', (req, res) => {
 
 // Sets up authorization routes
 auth(app);
-
+require('./routes/friends')(app);
 app.use('/users', users);
 
 // catch 404 and forward to error handler
