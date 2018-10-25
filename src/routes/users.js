@@ -39,7 +39,35 @@ router.get('/isUsernameValid', errWrap(async (req, res, next) => {
   assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
   const preexistent = await User.findOne({ username: newUsername });
   assert.strictEqual(preexistent, null, 'username already exists');
-  end(res, SUCCESS_PAYLOAD);
+  res.send(SUCCESS_PAYLOAD);
+  res.end();
+}));
+
+/**
+ * @api {post} /users/updateUsername updates the username to a new username
+ * @apiName UpdateUsername
+ * @apiGroup User
+ *
+ * @apiParam {String} newUsername The new username
+ */
+router.post('/updateUsername', errWrap(async (req, res, next) => {
+  // TODO: set isNewAccount to FALSE
+  const { newUsername } = req.body;
+  assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
+  const preexistent = await User.findOne({ username: newUsername });
+  assert.strictEqual(preexistent, null, 'username already exists');
+  const user = await User.findOneAndUpdate({
+    username: req.user.username
+  }, {
+    $set: {
+      username: newUsername,
+      isNewAccount: false
+    }
+  }, { new: true });
+  req.user.username = user.username;
+  req.user.isNewAccount = false;
+  res.send(SUCCESS_PAYLOAD);
+  res.end();
 }));
 
 /**
