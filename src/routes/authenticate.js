@@ -1,6 +1,8 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20');
+const GoogleIdTokenStrategy = require('passport-google-id-token');
 const authHelper = require('../helpers/authenticate');
+const { User } = require('../models');
 
 module.exports = (app) => {
   app.use(passport.initialize()); // Used to initialize passport
@@ -16,6 +18,35 @@ module.exports = (app) => {
     done(null, profile); // passes the profile data to serializeUser
   }
   ));
+
+  passport.use(new GoogleIdTokenStrategy({
+    clientID: process.env.CLIENT_ID
+  },
+  async (parsedToken, googleId, done) => {
+    const user = await User.findOne({ googleId: googleId });
+    if (!user) {
+      const userCount = await User.count();
+      const newUser = await User.create({
+        googleId: googleId,
+        username: `superstar${userCount}`,
+        name: parsedToken.payload.name,
+        isNewAccount: true
+      });
+      return done(null, {
+        friendAmount: newUser.friendAmount,
+        username: newUser.username,
+        name: newUser.name,
+        isNewAccount: newUser.isNewAccount
+      });
+    }
+
+    return done(null, {
+      friendAmount: user.friendAmount,
+      username: user.username,
+      name: user.name,
+      isNewAccount: user.isNewAccount
+    });
+  }));
 
   // Used to stuff a piece of information into a cookie
   passport.serializeUser((user, done) => {
@@ -46,5 +77,12 @@ module.exports = (app) => {
   app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
+  });
+
+  app.post('/auth/google/phone', passport.authenticate('google-id-token'), (req, res) => {
+    res.send({
+      message: req.user.isNewAccount ? 'signup' : 'success'
+    });
+    res.end();
   });
 };

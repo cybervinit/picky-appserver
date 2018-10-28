@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const request = require('request');
 const bcrypt = require('bcrypt');
 const { User } = require('../models');
 const { errWrap, errHandler, end, reqLog, isValidUsername, isPhoneValid } = require('../config/basic.js');
@@ -39,7 +38,35 @@ router.get('/isUsernameValid', errWrap(async (req, res, next) => {
   assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
   const preexistent = await User.findOne({ username: newUsername });
   assert.strictEqual(preexistent, null, 'username already exists');
-  end(res, SUCCESS_PAYLOAD);
+  res.send(SUCCESS_PAYLOAD);
+  res.end();
+}));
+
+/**
+ * @api {post} /users/updateUsername updates the username to a new username
+ * @apiName UpdateUsername
+ * @apiGroup User
+ *
+ * @apiParam {String} newUsername The new username
+ */
+router.post('/updateUsername', errWrap(async (req, res, next) => {
+  // TODO: set isNewAccount to FALSE
+  const { newUsername } = req.body;
+  assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
+  const preexistent = await User.findOne({ username: newUsername });
+  assert.strictEqual(preexistent, null, 'username already exists');
+  const user = await User.findOneAndUpdate({
+    username: req.user.username
+  }, {
+    $set: {
+      username: newUsername,
+      isNewAccount: false
+    }
+  }, { new: true });
+  req.user.username = user.username;
+  req.user.isNewAccount = false;
+  res.send(SUCCESS_PAYLOAD);
+  res.end();
 }));
 
 /**
@@ -132,78 +159,4 @@ router.post('/sendFollowRequest/:reqSender/:reqReceiver', authHelper.isUserAuthe
   end(res, SUCCESS_PAYLOAD);
 }));
 
-// Twilio SMS Verify -------------
-
-/**
- * @api {post} /users/requestPhoneVerification requests a phone verification from the Twilio API
- * @apiName RequestPhoneVerification
- * @apiGroup User
- *
- * @apiParam {String} phoneNumber the phone number for which to request phone verification (format: xxx-xxx-xxxx OR xxxxxxxxxx)
- * @apiParam {String} countryCode the country code for the phone number (Can and US: 1)
- * @apiParam {String} via the type of verification requested ('sms' or 'call')
- */
-router.post('/requestPhoneVerification', async (req, res, next) => {
-  reqLog(req);
-  const { phoneNumber, via, countryCode } = req.body;
-  assert(isPhoneValid(phoneNumber), 'phone number invalid');
-  const body = {
-    phone_number: phoneNumber,
-    country_code: countryCode,
-    via: via
-  };
-  // return res.end('Safe Lock [Remove for functionality]')
-  /* eslint-disable */
-  request({
-    method: 'POST',
-    url: 'https://api.authy.com/protected/json/phones/verification/start',
-    json: true,
-    headers: {
-      'X-Authy-API-Key': process.env.TWILIO_API_KEY
-    },
-    body: body
-  }, (err, respHttpCode, body) => {
-    if (err) {
-      return console.error('upload failed:', err)
-    }
-    return end(res, body)
-  });
-  /* eslint-enable */
-});
-
-/**
- * @api {get{ /users/verifyPhoneToken verifies the token the user entered in
- * @apiName VerifyPhoneToken
- * @apiGroup User
- *
- * @apiParam {String} verifyToken the token the user has entered in
- * @apiParam {String} phoneNumber the user's phone number (xxx-xxx-xxxx or xxxxxxxxxx)
- * @apiParam {String} countryCode the country code of the user's phone number
- *
- */
-router.get('/verifyPhoneToken', async (req, res, next) => {
-  reqLog(req);
-  const { verifyToken, countryCode, phoneNumber } = req.query;
-  // return res.end("Safe Lock [Remove for functionality]"); // eslint-disable-line
-  /* eslint-disable */
-  request({
-    method: 'GET',
-    url: 'https://api.authy.com/protected/json/phones/verification/check',
-    headers: {
-      'X-Authy-API-Key': process.env.TWILIO_API_KEY
-    },
-    qs: {
-      verification_code: verifyToken,
-      country_code: countryCode,
-      phone_number: phoneNumber
-    }
-  }, (err, respHttpCode, body) => {
-    if (err) {
-      console.error('verification check failed', err)
-    }
-    res.end(body)
-  })
-  /* eslint-disable */
-})
-
-module.exports = router
+module.exports = router;
