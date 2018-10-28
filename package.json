@@ -20,6 +20,7 @@
     "mongoose": "^5.0.9",
     "morgan": "~1.9.0",
     "passport": "^0.4.0",
+    "passport-google-id-token": "^0.4.5",
     "passport-google-oauth": "^1.0.0",
     "passport-google-oauth20": "^1.0.0",
     "passport-local": "^1.0.0",
