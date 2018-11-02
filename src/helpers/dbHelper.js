@@ -1,4 +1,5 @@
 const User = require('../schemas/user');
+const Question = require('../schemas/question');
 
 const addUser = async (userInfo) => {
   await User.count({...userInfo}, (err, count) => {
@@ -61,6 +62,46 @@ const deleteFriend = async (userId, friendId) => {
   }
 };
 
+const getQuestions = async () => {
+  const questions = await Question.find({});
+  return questions;
+};
+
+const getQuestion = async (questionId) => {
+  const question = await Question.findOne({_id: questionId});
+  return question;
+};
+
+const answerQuestion = async (userId, questionId, option, friendId) => {
+  const question = await getQuestion(questionId);
+  const user = await getUser(userId);
+  const friend = await getUser(friendId);
+  user.questionsAnswered.push(questionId);
+  user.questionCount++;
+  friend.unseenAnswers.push({question: question.question, option});
+  return {questionCount: user.questionCount, answerStatus: user.questionCount % 3 === 0};
+};
+
+const getAnswers = async (userId) => {
+  const user = await getUser(userId);
+  return user.unseenAnswers;
+};
+
+const moveAnswerToSeen = async (userId, index) => {
+  const user = await getUser(userId);
+  const seenAnswer = user.unseenAnswers[index];
+  user.seenAnswers.push(seenAnswer);
+  user.unseenAnswers.splice(index, 1);
+  return {message: 'Moved answer to seen answer.'};
+};
+
+const addQuestionAnswered = async (userId, questionId) => {
+  const user = await getUser(userId);
+  user.questionsAnswered.push(questionId);
+  user.save();
+  return {message: 'Added to question answered list'};
+};
+
 module.exports = {
   addUser,
   addFriend,
@@ -68,5 +109,11 @@ module.exports = {
   getFriends,
   getFriendsWithPage,
   getUser,
-  getUserWithUsername
+  getUserWithUsername,
+  getQuestions,
+  getQuestion,
+  answerQuestion,
+  getAnswers,
+  moveAnswerToSeen,
+  addQuestionAnswered
 };

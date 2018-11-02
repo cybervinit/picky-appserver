@@ -9,8 +9,13 @@ const userSchema = new Schema({
   loggedIn: Boolean,
   created: Date,
   friends: [{
+    friendUsername: String,
     friendId: String
   }],
+  questionsAnswered: [String],
+  unseenAnswers: [{question: String, option: String}],
+  seenAnswers: [{question: String, option: String}],
+  questionCount: Number
 });
 
 module.exports = mongoose.model('user', userSchema);
