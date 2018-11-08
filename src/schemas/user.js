@@ -5,14 +5,16 @@ const userSchema = new Schema({
   googleId: String,
   firstName: String,
   lastName: String,
-  userName: String,
+  username: String,
   loggedIn: Boolean,
   created: Date,
+  passwordHash: String,
+  phone: String,
   friends: [{
     friendUsername: String,
     friendId: String
   }],
-  questionsAnswered: [String],
+  questionsAnswered: [{question: String, user: String, option: String}],
   unseenAnswers: [{question: String, option: String}],
   seenAnswers: [{question: String, option: String}],
   questionCount: Number

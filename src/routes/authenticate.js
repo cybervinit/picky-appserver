@@ -3,8 +3,9 @@ const jwt = require('jsonwebtoken');
 const GoogleStrategy = require('passport-google-oauth20');
 const GoogleIdTokenStrategy = require('passport-google-id-token');
 const authHelper = require('../helpers/authenticate');
-const { User } = require('../models');
+const {User} = require('../models');
 const dbHelper = require('../helpers/dbHelper');
+const {end, reqLog, isPhoneValid} = require('../config/basic.js');
 
 module.exports = (app) => {
   app.use(passport.initialize()); // Used to initialize passport
@@ -25,7 +26,7 @@ module.exports = (app) => {
     clientID: process.env.CLIENT_ID
   },
   async (parsedToken, googleId, done) => {
-    const user = await User.findOne({ googleId: googleId });
+    const user = await User.findOne({googleId: googleId});
     if (!user) {
       const userCount = await User.count();
       const newUser = await User.create({
@@ -75,7 +76,7 @@ module.exports = (app) => {
       lastName: givenName
     };
     const user = await dbHelper.addUser(userInfo);
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'pass', {
+    const token = jwt.sign({id: user._id}, process.env.JWT_SECRET || 'pass', {
       expiresIn: 8640000
     });
     res.send({token, message: 'User has been authenticated'});
@@ -98,4 +99,77 @@ module.exports = (app) => {
     });
     res.end();
   });
+
+  /**
+   * @api {post} /users/requestPhoneVerification requests a phone verification from the Twilio API
+   * @apiName RequestPhoneVerification
+   * @apiGroup User
+   *
+   * @apiParam {String} phoneNumber the phone number for which to request phone verification (format: xxx-xxx-xxxx OR xxxxxxxxxx)
+   * @apiParam {String} countryCode the country code for the phone number (Can and US: 1)
+   * @apiParam {String} via the type of verification requested ('sms' or 'call')
+   */
+  app.post('/requestPhoneVerification', async (req, res, next) => {
+    reqLog(req);
+    const {phoneNumber, via, countryCode} = req.body;
+    if (!isPhoneValid(phoneNumber)) {
+      return res.send({message: 'Invalid Phone Number'});
+    }
+    const body = {
+      phone_number: phoneNumber,
+      country_code: countryCode,
+      via: via
+    };
+    /* eslint-disable */
+    request({
+      method: 'POST',
+      url: 'https://api.authy.com/protected/json/phones/verification/start',
+      json: true,
+      headers: {
+        'X-Authy-API-Key': process.env.TWILIO_API_KEY
+      },
+      body: body
+    }, (err, respHttpCode, body) => {
+      if (err) {
+        return console.error('upload failed:', err);
+      }
+      return end(res, body);
+    });
+    /* eslint-enable */
+  });
+  /**
+   * @api {get{ /users/verifyPhoneToken verifies the token the user entered in
+   * @apiName VerifyPhoneToken
+   * @apiGroup User
+   *
+   * @apiParam {String} verifyToken the token the user has entered in
+   * @apiParam {String} phoneNumber the user's phone number (xxx-xxx-xxxx or xxxxxxxxxx)
+   * @apiParam {String} countryCode the country code of the user's phone number
+   *
+   */
+  app.get('/verifyPhoneToken', async (req, res, next) => {
+    reqLog(req);
+    const {verifyToken, countryCode, phoneNumber} = req.query;
+    // return res.end("Safe Lock [Remove for functionality]"); // eslint-disable-line
+    /* eslint-disable */
+    request({
+      method: 'GET',
+      url: 'https://api.authy.com/protected/json/phones/verification/check',
+      headers: {
+        'X-Authy-API-Key': process.env.TWILIO_API_KEY
+      },
+      qs: {
+        verification_code: verifyToken,
+        country_code: countryCode,
+        phone_number: phoneNumber
+      }
+    }, (err, respHttpCode, body) => {
+      if (err) {
+        console.error('verification check failed', err);
+      }
+      res.end(body);
+    });
+    /* eslint-disable */
+  });
+
 };

@@ -1,5 +1,6 @@
 const User = require('../schemas/user');
 const Question = require('../schemas/question');
+const constants = require('../helpers/constants');
 
 const addUser = async (userInfo) => {
   await User.count({...userInfo}, (err, count) => {
@@ -18,14 +19,11 @@ const addUser = async (userInfo) => {
 
 const getUser = async (userId) => {
   const user = await User.findOne({_id: userId});
-  return {
-    firstName: user.firstName,
-    lastName: user.lastName
-  };
+  return user;
 };
 
 const getUserWithUsername = async (username) => {
-  const user = await User.findONe({username});
+  const user = await User.findOne({username});
   return user;
 };
 
@@ -76,15 +74,35 @@ const answerQuestion = async (userId, questionId, option, friendId) => {
   const question = await getQuestion(questionId);
   const user = await getUser(userId);
   const friend = await getUser(friendId);
+  if (user.questionsAnswered.find((element) => element._id.toString() === questionId.toString())) {
+    return {message: 'Question has already been answered'};
+  }
   user.questionsAnswered.push(questionId);
   user.questionCount++;
-  friend.unseenAnswers.push({question: question.question, option});
-  return {questionCount: user.questionCount, answerStatus: user.questionCount % 3 === 0};
+  friend.unseenAnswers.push({question: question.question, option: question.options[option]});
+  user.save();
+  friend.save();
+  return {
+    questionCount: user.questionCount,
+    answerStatus: user.questionCount % constants.QUESTIONS_BEFORE_ANSWER === 0
+  };
 };
 
 const getAnswers = async (userId) => {
   const user = await getUser(userId);
   return user.unseenAnswers;
+};
+
+const getAnswer = async (userId) => {
+  const user = await getUser(userId);
+  if (user.unseenAnswers.length === 0) {
+    return {message: 'No unseen answers available'};
+  }
+  const unseenAnswerIndex = Math.floor(Math.random() * user.unseenAnswers.length);
+  user.seenAnswers.push(user.unseenAnswers[unseenAnswerIndex]);
+  user.unseenAnswers.splice(unseenAnswerIndex, 1);
+  user.save();
+  return user.unseenAnswers[unseenAnswerIndex];
 };
 
 const moveAnswerToSeen = async (userId, index) => {
@@ -102,6 +120,11 @@ const addQuestionAnswered = async (userId, questionId) => {
   return {message: 'Added to question answered list'};
 };
 
+const addQuestion = async (questionObj) => {
+  const question = new Question(questionObj);
+  await question.save();
+};
+
 module.exports = {
   addUser,
   addFriend,
@@ -112,8 +135,10 @@ module.exports = {
   getUserWithUsername,
   getQuestions,
   getQuestion,
+  addQuestion,
   answerQuestion,
   getAnswers,
+  getAnswer,
   moveAnswerToSeen,
   addQuestionAnswered
 };

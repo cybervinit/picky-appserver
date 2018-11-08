@@ -1,9 +1,13 @@
-let express = require('express');
-let router = express.Router();
+const answer = require('./answer');
+const authenticate = require('./authenticate');
+const friends = require('./friends');
+const questions = require('./questions');
+const users = require('./users');
 
-/* GET home page. */
-router.get('/', function (req, res, next) {
-  res.render('index', { title: 'Express' });
-});
-
-module.exports = router;
+module.exports = (app) => {
+  answer(app);
+  authenticate(app);
+  friends(app);
+  questions(app);
+  users(app);
+};
