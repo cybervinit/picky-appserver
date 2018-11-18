@@ -61,9 +61,14 @@ const deleteFriend = async (userId, friendId) => {
   }
 };
 
-const getGameSession = async (sessionName) => {
-  const session = await GameSession.findOne({ name: sessionName });
+const getGameSession = async (gameSessionName) => {
+  const session = await GameSession.findOne({ name: gameSessionName });
   return session;
+};
+
+const addGameSession = async (gameSessionName) => {
+  const gameSession = await GameSession.create({ name: gameSessionName });
+  return gameSession;
 };
 
 module.exports = {
@@ -74,5 +79,6 @@ module.exports = {
   getFriendsWithPage,
   getUser,
   getUserWithUsername,
-  getGameSession
+  getGameSession,
+  addGameSession
 };
