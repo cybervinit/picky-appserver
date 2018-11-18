@@ -1,20 +1,17 @@
-const express = require('express');
-const router = express.Router();
 const { errWrap } = require('../config/basic');
-const { getGameSession } = require('../models');
+const { getGameSession } = require('../helpers/dbHelper');
 
 module.exports = app => {
-  app.get('/:sessionName', errWrap(async (req, res, next) => {
-    const { sessionName } = req.params;
-    const gameSession = await getGameSession(sessionName);
-    console.log("Game Session: ", gameSession);
+  app.get('/game-sessions/:gameSessionName', errWrap(async (req, res, next) => {
+    const { gameSessionName } = req.params;
+    const gameSession = await getGameSession(gameSessionName);
+    console.log('Game Session: ', gameSession);
     res.send({
-      gameSessionExists: gameSession ? true : false,
+      gameSessionExists: !!gameSession,
       gameSession: {
         name: gameSession.name
       }
     });
     res.end();
   }));
-}
-
+};

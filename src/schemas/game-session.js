@@ -5,4 +5,4 @@ const GameSessionSchema = new Schema({
   name: { type: String, lowercase: true }
 });
 
-module.exports.GameSession = mongoose.model('GameSession', GameSessionSchema);
+module.exports = mongoose.model('GameSession', GameSessionSchema);

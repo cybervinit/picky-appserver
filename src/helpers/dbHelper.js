@@ -1,9 +1,8 @@
-const { User, GameSession } = require('../schemas');
-
+const { GameSession, User } = require('../schemas');
 
 const addUser = async (userInfo) => {
   await User.count({...userInfo}, (err, count) => {
-    if (count === 0) {
+    if (err || count === 0) {
       const newUser = new User({
         ...userInfo,
         friends: []
@@ -65,7 +64,7 @@ const deleteFriend = async (userId, friendId) => {
 const getGameSession = async (sessionName) => {
   const session = await GameSession.findOne({ name: sessionName });
   return session;
-}
+};
 
 module.exports = {
   addUser,
