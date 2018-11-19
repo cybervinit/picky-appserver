@@ -17,7 +17,7 @@ db.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
-db.on('error', (err) => console.log);
+db.on('error', (err) => console.log(err));
 
 const app = express();
 
