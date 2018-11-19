@@ -37,6 +37,14 @@ app.get('/', (req, res) => {
   res.send('Welcome to picky!');
 });
 
+app.use((req, res, next) => {
+  if (req.app.get('env') === 'development') {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+  }
+  next();
+});
+
 // Sets up authorization routes
 auth(app);
 require('./routes/friends')(app);
