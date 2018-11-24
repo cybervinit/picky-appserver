@@ -71,6 +71,11 @@ const addGameSession = async (gameSessionName) => {
   return gameSession;
 };
 
+const addUserToGameSession = async (gameSessionName, username) => {
+  const gameSession = await GameSession.updateOne({ name: gameSessionName }, { $push: { users: username } });
+  return gameSession;
+};
+
 module.exports = {
   addUser,
   addFriend,
@@ -80,5 +85,6 @@ module.exports = {
   getUser,
   getUserWithUsername,
   getGameSession,
-  addGameSession
+  addGameSession,
+  addUserToGameSession
 };
