@@ -32,7 +32,7 @@ module.exports = app => {
   }));
 
   app.post('/game-sessions/make/:gameSessionName', errWrap(async (req, res, next) => {
-    const { gameSessionName } = req.params.gameSessionName;
+    const { gameSessionName } = req.params;
     const existingGameSession = await getGameSession(gameSessionName);
     if (existingGameSession) {
       res.send({ isGameSessionFree: !!existingGameSession });
