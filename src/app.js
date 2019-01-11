@@ -39,8 +39,10 @@ app.get('/', (req, res) => {
 
 app.use((req, res, next) => {
   if (req.app.get('env') === 'development') {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
   }
   next();
 });
@@ -54,7 +56,10 @@ require('./routes/game-sessions')(app);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   let err = new Error('Not Found');
-  err.status = 404;
+  if (req.method === 'OPTIONS') { // FIXME: checks options to allow CORS policy requests.
+    err.status = 200;
+  }
+  err.status = err.status ? err.status : 404;
   next(err);
 });
 
@@ -66,7 +71,8 @@ app.use(function (err, req, res, next) {
 
   // render the error
   res.status(err.status || 500);
-  res.end(JSON.stringify({ message: err.message }));
+  res.send(JSON.stringify({ message: err.message }));
+  res.end();
 });
 
 module.exports = app;

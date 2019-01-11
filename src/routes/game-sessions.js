@@ -10,10 +10,12 @@ module.exports = app => {
     const { gameSessionName } = req.params;
     const gameSession = await getGameSession(gameSessionName);
     res.send({
-      isGameSessionFree: !gameSession,
-      gameSession: gameSession ? {
-        name: gameSession.name
-      } : null
+      payload: {
+        isGameSessionFree: gameSession ? gameSession.isGameSessionFree : true,
+        name: gameSessionName,
+        users: gameSession ? gameSession.name : null
+      },
+      message: 'success'
     });
     res.end();
   }));
@@ -23,10 +25,12 @@ module.exports = app => {
     const { gameSessionName } = req.params;
     const gameSession = await addUserToGameSession(gameSessionName, username);
     res.send({
-      gameSession: {
+      payload: {
+        isGameSessionFree: gameSession.isGameSessionFree,
         name: gameSession.name,
         users: gameSession.users
-      }
+      },
+      message: 'success'
     });
     res.end();
   }));
@@ -35,15 +39,26 @@ module.exports = app => {
     const { gameSessionName } = req.params;
     const existingGameSession = await getGameSession(gameSessionName);
     if (existingGameSession) {
-      res.send({ isGameSessionFree: !!existingGameSession });
-      return res.end();
+      res.send({
+        payload: {
+          isGameSessionFree: !!existingGameSession,
+          gameSession: {
+            name: existingGameSession.name
+          }},
+        message: 'success'
+      });
+      res.end();
+      return;
     }
-    const gameSession = await addGameSession();
+    const gameSession = await addGameSession(gameSessionName);
     res.send({
-      isGameSessionFree: !!gameSession,
-      gameSession: {
-        name: gameSession.name
-      }});
+      payload: {
+        isGameSessionFree: !!gameSession,
+        gameSession: {
+          name: gameSession.name
+        }},
+      message: 'success'
+    });
     res.end();
   }));
 };

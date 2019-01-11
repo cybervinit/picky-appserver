@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 const GameSessionSchema = new Schema({
   name: { type: String, lowercase: true },
-  users: [String]
+  users: [String],
+  isGameSessionFree: Boolean
 });
 
 module.exports = mongoose.model('GameSession', GameSessionSchema);

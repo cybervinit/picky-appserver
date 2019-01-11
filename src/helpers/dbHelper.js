@@ -67,7 +67,11 @@ const getGameSession = async (gameSessionName) => {
 };
 
 const addGameSession = async (gameSessionName) => {
-  const gameSession = await GameSession.create({ name: gameSessionName });
+  const dup = await getGameSession(gameSessionName);
+  if (dup) {
+    return dup;
+  }
+  const gameSession = await GameSession.create({ name: gameSessionName, isGameSessionFree: true });
   return gameSession;
 };
 
