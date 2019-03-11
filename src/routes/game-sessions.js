@@ -24,6 +24,7 @@ module.exports = app => {
     const { username } = req.body;
     const { gameSessionName } = req.params;
     const gameSession = await addUserToGameSession(gameSessionName, username);
+    req.session.user = { username: username };
     res.send({
       payload: {
         isGameSessionFree: gameSession.isGameSessionFree,
