@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const users = require('./routes/users');
 const auth = require('./routes/authenticate');
+// const cors = require('cors');
 
 mongoose.connect(process.env.PICKY_DB_URL || 'mongodb://localhost/test', { useNewUrlParser: true });
 mongoose.Promise = global.Promise;
@@ -31,7 +32,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieSession({
   name: 'user',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
-  keys: [process.env.COOKIE_SESSION_KEYS]
+  keys: [process.env.COOKIE_SESSION_KEYS],
+  httpOnly: false
 }));
 
 app.get('/', (req, res) => {
@@ -40,12 +42,17 @@ app.get('/', (req, res) => {
 
 app.use((req, res, next) => {
   if (req.app.get('env') === 'development') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'content-type'); // Add headers (sent from CORS request) here
+    // TODO: switch to use the cors npm package
   }
-  next();
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
 });
 
 // Sets up authorization routes
@@ -57,9 +64,6 @@ require('./routes/game-sessions')(app);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   let err = new Error('Not Found');
-  if (req.method === 'OPTIONS') { // FIXME: checks options to allow CORS policy requests.
-    err.status = 200;
-  }
   err.status = err.status ? err.status : 404;
   next(err);
 });
