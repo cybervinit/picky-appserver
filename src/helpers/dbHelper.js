@@ -75,8 +75,26 @@ const addGameSession = async (gameSessionName) => {
   return gameSession;
 };
 
-const addUserToGameSession = async (gameSessionName, username) => {
-  const gameSession = await GameSession.updateOne({ name: gameSessionName }, { $push: { users: username } });
+const addUserToGameSession = async (username, gameSessionName) => {
+  const gameSession = await GameSession.findOneAndUpdate({
+    name: gameSessionName
+  }, {
+    $push: { users: username }
+  }, {
+    new: true
+  });
+  console.log('DB: ', gameSession);
+  return gameSession;
+};
+
+const lockGameSession = async (gameSessionName) => {
+  const gameSession = await GameSession.findOneAndUpdate({
+    name: gameSessionName
+  }, {
+    isGameSessionFree: false
+  }, {
+    new: true
+  });
   return gameSession;
 };
 
@@ -90,5 +108,6 @@ module.exports = {
   getUserWithUsername,
   getGameSession,
   addGameSession,
-  addUserToGameSession
+  addUserToGameSession,
+  lockGameSession
 };

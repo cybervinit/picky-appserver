@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const users = require('./routes/users');
 const auth = require('./routes/authenticate');
+const { errWrap } = require('./config/basic');
 // const cors = require('cors');
 
 mongoose.connect(process.env.PICKY_DB_URL || 'mongodb://localhost/test', { useNewUrlParser: true });
@@ -62,11 +63,11 @@ app.use('/users', users);
 require('./routes/game-sessions')(app);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  let err = new Error('Not Found');
+app.use(errWrap((req, res, next) => {
+  let err = new Error('Endpoint Not Found');
   err.status = err.status ? err.status : 404;
-  next(err);
-});
+  throw err;
+}));
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -76,8 +77,7 @@ app.use(function (err, req, res, next) {
 
   // render the error
   res.status(err.status || 500);
-  res.send(JSON.stringify({ message: err.message }));
-  res.end();
+  res.send({ message: err.message });
 });
 
 module.exports = app;
