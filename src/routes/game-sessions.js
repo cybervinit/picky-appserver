@@ -32,13 +32,13 @@ module.exports = app => {
       getGameSession,
       (gs) => {
         if (gs.isGameSessionFree) {
-          c.updateCurrUserUsername(username, req.session);
+          c.setCurrUser(username, req.session);
           c.addUserToGameSession(username, req.session);
           return addUserToGameSession(username, gs.name);
         }
         return gs;
       },
-      (gs) => (gs.users.length === 2 && gs.isGameSessionFree) // lock if game session full
+      (gs) => (gs.users.length >= 2 && gs.isGameSessionFree) // lock if game session full
         ? lockGameSession(gs.name) : gs
     )(gameSessionName);
     res.send({ message: 'success' });
@@ -51,6 +51,7 @@ module.exports = app => {
       c.initGameSession(existingGameSession, req.session);
       if (!existingGameSession.isGameSessionFree) throw err('game session busy', 200);
       res.send({ message: 'success' });
+      return;
     }
     const gameSession = await addGameSession(gameSessionName);
     c.initGameSession(gameSession, req.session);

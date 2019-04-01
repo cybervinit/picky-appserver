@@ -6,10 +6,13 @@ const initGameSession = (gs, cookie) => {
   cookie.game_session.name = gs.name;
   cookie.game_session.isGameSessionFree = gs.isGameSessionFree;
 };
-const updateCurrUserUsername = (username, cookie) => { cookie.user.username = username; };
+const setCurrUser = (username, cookie) => {
+  cookie.user = {};
+  cookie.user.username = username;
+};
 
 module.exports = {
-  updateCurrUserUsername,
+  setCurrUser,
   addUserToGameSession,
   initGameSession
 };
