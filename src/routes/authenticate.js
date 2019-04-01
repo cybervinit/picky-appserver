@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const GoogleStrategy = require('passport-google-oauth20');
 const GoogleIdTokenStrategy = require('passport-google-id-token');
 const authHelper = require('../helpers/authenticate');
-const { User } = require('../models');
+const { User } = require('../schemas/user');
 const dbHelper = require('../helpers/dbHelper');
 
 module.exports = (app) => {
