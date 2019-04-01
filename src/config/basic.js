@@ -7,6 +7,12 @@ let errHandler = function (err, obj) {
 
 let errWrap = (fn) => (...args) => fn(...args).catch(args[2]);
 
+let err = (errMsg, errStatus) => {
+  let err1 = new Error(errMsg);
+  err1.status = errStatus || 200;
+  return err1;
+};
+
 let routeCheck = function (res, endpoint) {
   res.end('Reached: ' + endpoint);
 };
@@ -37,3 +43,4 @@ module.exports.end = end;
 module.exports.reqLog = reqLog;
 module.exports.isValidUsername = isValidUsername;
 module.exports.isPhoneValid = isPhoneValid;
+module.exports.err = err;

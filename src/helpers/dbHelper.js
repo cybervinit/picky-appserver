@@ -1,8 +1,8 @@
-const User = require('../schemas/user');
+const { GameSession, User } = require('../schemas');
 
 const addUser = async (userInfo) => {
   await User.count({...userInfo}, (err, count) => {
-    if (count === 0) {
+    if (err || count === 0) {
       const newUser = new User({
         ...userInfo,
         friends: []
@@ -61,6 +61,43 @@ const deleteFriend = async (userId, friendId) => {
   }
 };
 
+const getGameSession = async (gameSessionName) => {
+  const session = await GameSession.findOne({ name: gameSessionName });
+  return session;
+};
+
+const addGameSession = async (gameSessionName) => {
+  const dup = await getGameSession(gameSessionName);
+  if (dup) {
+    return dup;
+  }
+  const gameSession = await GameSession.create({ name: gameSessionName, isGameSessionFree: true });
+  return gameSession;
+};
+
+const addUserToGameSession = async (username, gameSessionName) => {
+  const gameSession = await GameSession.findOneAndUpdate({
+    name: gameSessionName
+  }, {
+    $push: { users: username }
+  }, {
+    new: true
+  });
+  console.log('DB: ', gameSession);
+  return gameSession;
+};
+
+const lockGameSession = async (gameSessionName) => {
+  const gameSession = await GameSession.findOneAndUpdate({
+    name: gameSessionName
+  }, {
+    isGameSessionFree: false
+  }, {
+    new: true
+  });
+  return gameSession;
+};
+
 module.exports = {
   addUser,
   addFriend,
@@ -68,5 +105,9 @@ module.exports = {
   getFriends,
   getFriendsWithPage,
   getUser,
-  getUserWithUsername
+  getUserWithUsername,
+  getGameSession,
+  addGameSession,
+  addUserToGameSession,
+  lockGameSession
 };
