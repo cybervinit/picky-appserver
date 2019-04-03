@@ -87,11 +87,12 @@ const addUserToGameSession = async (username, gameSessionName) => {
   return gameSession;
 };
 
-const lockGameSession = async (gameSessionName) => {
+const lockGameSessionAndStartCountdown = async (gameSessionName) => {
   const gameSession = await GameSession.findOneAndUpdate({
     name: gameSessionName
   }, {
-    isGameSessionFree: false
+    isGameSessionFree: false,
+    startCountdownTime: (new Date()).getTime()
   }, {
     new: true
   });
@@ -109,5 +110,5 @@ module.exports = {
   getGameSession,
   addGameSession,
   addUserToGameSession,
-  lockGameSession
+  lockGameSessionAndStartCountdown
 };

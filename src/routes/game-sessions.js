@@ -11,14 +11,12 @@ const {
   getGameSession,
   addGameSession,
   addUserToGameSession,
-  lockGameSession
+  lockGameSessionAndStartCountdown
 } = require('../helpers/dbHelper');
 const c = require('../helpers/cookieHelper');
 
 module.exports = app => {
   app.get('/game-sessions/:gameSessionName', errWrap(async (req, res, next) => { // TODO: change to only use cookie game session and not by path params
-    console.log('VINIT', req.session);
-
     const gameSession = await getGameSession(c.getGameSessionName(req.session));
     assert.ok(gameSession, "GameSession doesn't exist");
     c.updateGameSession(gameSession, req.session);
@@ -39,7 +37,8 @@ module.exports = app => {
         return gs;
       },
       (gs) => (gs.users.length >= 2 && gs.isGameSessionFree) // lock if game session full
-        ? lockGameSession(gs.name) : gs
+        ? lockGameSessionAndStartCountdown(gs.name) : gs,
+      (gs) => c.updateGameSession(gs, req.session)
     )(gameSessionName);
     res.send(MSG_SUCCESS);
   }));
