@@ -56,4 +56,12 @@ module.exports = app => {
     c.updateGameSession(gameSession, req.session);
     res.send(MSG_SUCCESS);
   }));
+
+  app.get('/game-sessions/random', errWrap(async (req, res, next) => {
+    res.send(MSG_SUCCESS);
+  }));
+
+  app.post('/game-sessions/random', errWrap(async (req, res, next) => {
+    res.send(MSG_SUCCESS);
+  }));
 };
