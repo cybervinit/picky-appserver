@@ -57,11 +57,23 @@ module.exports = app => {
     res.send(MSG_SUCCESS);
   }));
 
-  app.get('/game-sessions/random', errWrap(async (req, res, next) => {
+  /** @temporary */
+  app.get('/random', errWrap(async (req, res, next) => {
     res.send(MSG_SUCCESS);
   }));
 
-  app.post('/game-sessions/random', errWrap(async (req, res, next) => {
+  /** @temporary */
+  app.get('/buddy_answer', errWrap(async (req, res, next) => {
+    res.send({ buddyAnswer: 'YOU ROCK BRO', ...MSG_SUCCESS });
+  }));
+
+  /** @temporary */
+  app.get('/gimme_question', errWrap(async (req, res, next) => {
+    res.send({ question: 'WHAT IS HIS FAVOURITE BAND?' });
+  }));
+
+  /** @temporary */
+  app.post('/random', errWrap(async (req, res, next) => {
     res.send(MSG_SUCCESS);
   }));
 };
