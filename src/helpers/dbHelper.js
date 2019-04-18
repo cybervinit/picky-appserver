@@ -1,4 +1,4 @@
-const { GameSession, User } = require('../schemas');
+const { GameSession, User, Question } = require('../schemas');
 
 const addUser = async (userInfo) => {
   await User.count({...userInfo}, (err, count) => {
@@ -99,6 +99,14 @@ const lockGameSessionAndStartCountdown = async (gameSessionName) => {
   return gameSession;
 };
 
+const addQuestion = async (questionText, questionOptions) => {
+  const q = await Question.create({
+    questionText: questionText,
+    questionOptions: questionOptions
+  });
+  return q;
+};
+
 module.exports = {
   addUser,
   addFriend,
@@ -110,5 +118,6 @@ module.exports = {
   getGameSession,
   addGameSession,
   addUserToGameSession,
-  lockGameSessionAndStartCountdown
+  lockGameSessionAndStartCountdown,
+  addQuestion
 };
