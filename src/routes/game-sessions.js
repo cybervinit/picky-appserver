@@ -31,7 +31,6 @@ module.exports = app => {
       (gs) => {
         if (gs.isGameSessionFree) {
           c.setCurrUser(username, req.session);
-          c.addUserToGameSession(username, req.session);
           return addUserToGameSession(username, gs.name);
         }
         return gs;

@@ -11,9 +11,23 @@ const setCurrUser = (username, cookie) => {
 
 const getGameSessionName = (cookie) => cookie.game_session.name;
 
+/** @unused */
+const getAnswerIndex = (cookie) => cookie.game_session.questions.filter(
+  (el) => el.answerer === getCurrUser(cookie).username
+)[0].answer;
+
+const getCurrUser = (cookie) => cookie.user;
+
+const getBuddyUsername = (cookie) => cookie.game_session.users.filter(
+  (u) => u !== getCurrUser(cookie).username
+)[0];
+
 module.exports = {
   setCurrUser,
   addUserToGameSession,
   updateGameSession,
-  getGameSessionName
+  getGameSessionName,
+  getCurrUser,
+  getAnswerIndex,
+  getBuddyUsername
 };

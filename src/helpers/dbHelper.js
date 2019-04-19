@@ -71,7 +71,11 @@ const addGameSession = async (gameSessionName) => {
   if (dup) {
     return dup;
   }
-  const gameSession = await GameSession.create({ name: gameSessionName, isGameSessionFree: true });
+  const gameSession = await GameSession.create({
+    name: gameSessionName,
+    isGameSessionFree: true,
+    questions: []
+  });
   return gameSession;
 };
 
@@ -83,7 +87,6 @@ const addUserToGameSession = async (username, gameSessionName) => {
   }, {
     new: true
   });
-  console.log('DB: ', gameSession);
   return gameSession;
 };
 
@@ -99,12 +102,58 @@ const lockGameSessionAndStartCountdown = async (gameSessionName) => {
   return gameSession;
 };
 
-const addQuestion = async (questionText, questionOptions) => {
+const addQuestion = async (question) => {
+  const {
+    questionText,
+    questionOptions
+  } = question;
   const q = await Question.create({
     questionText: questionText,
-    questionOptions: questionOptions
+    options: questionOptions
   });
   return q;
+};
+
+const getQuestionCount = async () => {
+  const qCount = await Question.count();
+  return qCount;
+};
+
+const getRandomQuestion = async () => {
+  const qCount = await getQuestionCount();
+  const randomIndex = Math.floor(Math.random() * qCount);
+  const question = await Question.findOne().skip(randomIndex);
+  return question;
+};
+
+const addQuestionToGameSession = async (answerer, question, gsName) => {
+  const gs = await GameSession.findOneAndUpdate({ name: gsName },
+    {
+      $push: {
+        questions: {
+          answerer: answerer,
+          question: question._id,
+          answer: 0
+        }
+      }
+    },
+    {
+      new: true
+    }
+  ).populate('questions.question');
+  return gs;
+};
+
+const answerQuestion = async (answerer, gsName, answerIndex) => {
+  const gs = await GameSession.findOneAndUpdate(
+    { name: gsName, 'questions.answerer': answerer },
+    {
+      $set: { 'questions.$.answer': answerIndex,
+        'questions.$.isAnswered': true
+      }
+    }
+  );
+  return gs;
 };
 
 module.exports = {
@@ -119,5 +168,8 @@ module.exports = {
   addGameSession,
   addUserToGameSession,
   lockGameSessionAndStartCountdown,
-  addQuestion
+  addQuestion,
+  getRandomQuestion,
+  addQuestionToGameSession,
+  answerQuestion
 };

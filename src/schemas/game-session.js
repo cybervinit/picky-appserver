@@ -6,7 +6,12 @@ const GameSessionSchema = new Schema({
   users: [String],
   isGameSessionFree: Boolean,
   startCountdownTime: { type: Number, default: (new Date()).getTime() },
-  questions: [{ type: Schema.Types.ObjectId, ref: 'Question' }]
+  questions: [{
+    answerer: String,
+    question: { type: Schema.Types.ObjectId, ref: 'Question' },
+    answer: Number,
+    isAnswered: { type: Boolean, default: false }
+  }]
 });
 
 module.exports = mongoose.model('GameSession', GameSessionSchema);
