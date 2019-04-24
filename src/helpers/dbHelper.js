@@ -62,7 +62,8 @@ const deleteFriend = async (userId, friendId) => {
 };
 
 const getGameSession = async (gameSessionName) => {
-  const session = await GameSession.findOne({ name: gameSessionName });
+  const session = await GameSession.findOne({ name: gameSessionName })
+    .populate('questions.question');
   return session;
 };
 
@@ -156,6 +157,19 @@ const answerQuestion = async (answerer, gsName, answerIndex) => {
   return gs;
 };
 
+const removeMyPreviousQuestion = async (username, gsName) => {
+  await GameSession.update({ name: gsName },
+    { $pull:
+      {
+        questions: {
+          answerer: { $ne: username },
+          isAnswered: true
+        }
+      }
+    }
+  );
+};
+
 module.exports = {
   addUser,
   addFriend,
@@ -171,5 +185,6 @@ module.exports = {
   addQuestion,
   getRandomQuestion,
   addQuestionToGameSession,
-  answerQuestion
+  answerQuestion,
+  removeMyPreviousQuestion
 };
