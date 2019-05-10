@@ -1,4 +1,4 @@
-const { GameSession, User } = require('../schemas');
+const { GameSession, User, Question } = require('../schemas');
 
 const addUser = async (userInfo) => {
   await User.count({...userInfo}, (err, count) => {
@@ -62,7 +62,8 @@ const deleteFriend = async (userId, friendId) => {
 };
 
 const getGameSession = async (gameSessionName) => {
-  const session = await GameSession.findOne({ name: gameSessionName });
+  const session = await GameSession.findOne({ name: gameSessionName })
+    .populate('questions.question');
   return session;
 };
 
@@ -71,7 +72,11 @@ const addGameSession = async (gameSessionName) => {
   if (dup) {
     return dup;
   }
-  const gameSession = await GameSession.create({ name: gameSessionName, isGameSessionFree: true });
+  const gameSession = await GameSession.create({
+    name: gameSessionName,
+    isGameSessionFree: true,
+    questions: []
+  });
   return gameSession;
 };
 
@@ -83,19 +88,86 @@ const addUserToGameSession = async (username, gameSessionName) => {
   }, {
     new: true
   });
-  console.log('DB: ', gameSession);
   return gameSession;
 };
 
-const lockGameSession = async (gameSessionName) => {
+const lockGameSessionAndStartCountdown = async (gameSessionName) => {
   const gameSession = await GameSession.findOneAndUpdate({
     name: gameSessionName
   }, {
-    isGameSessionFree: false
+    isGameSessionFree: false,
+    startCountdownTime: (new Date()).getTime()
   }, {
     new: true
   });
   return gameSession;
+};
+
+const addQuestion = async (question) => {
+  const {
+    questionText,
+    questionOptions
+  } = question;
+  const q = await Question.create({
+    questionText: questionText,
+    options: questionOptions
+  });
+  return q;
+};
+
+const getQuestionCount = async () => {
+  const qCount = await Question.count();
+  return qCount;
+};
+
+const getRandomQuestion = async () => {
+  const qCount = await getQuestionCount();
+  const randomIndex = Math.floor(Math.random() * qCount);
+  const question = await Question.findOne().skip(randomIndex);
+  return question;
+};
+
+const addQuestionToGameSession = async (answerer, question, gsName) => {
+  const gs = await GameSession.findOneAndUpdate({ name: gsName },
+    {
+      $push: {
+        questions: {
+          answerer: answerer,
+          question: question._id,
+          answer: 0
+        }
+      }
+    },
+    {
+      new: true
+    }
+  ).populate('questions.question');
+  return gs;
+};
+
+const answerQuestion = async (answerer, gsName, answerIndex) => {
+  const gs = await GameSession.findOneAndUpdate(
+    { name: gsName, 'questions.answerer': answerer },
+    {
+      $set: { 'questions.$.answer': answerIndex,
+        'questions.$.isAnswered': true
+      }
+    }
+  );
+  return gs;
+};
+
+const removeMyPreviousQuestion = async (username, gsName) => {
+  await GameSession.update({ name: gsName },
+    { $pull:
+      {
+        questions: {
+          answerer: { $ne: username },
+          isAnswered: true
+        }
+      }
+    }
+  );
 };
 
 module.exports = {
@@ -109,5 +181,10 @@ module.exports = {
   getGameSession,
   addGameSession,
   addUserToGameSession,
-  lockGameSession
+  lockGameSessionAndStartCountdown,
+  addQuestion,
+  getRandomQuestion,
+  addQuestionToGameSession,
+  answerQuestion,
+  removeMyPreviousQuestion
 };

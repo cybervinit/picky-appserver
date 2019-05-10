@@ -61,6 +61,7 @@ auth(app);
 require('./routes/friends')(app);
 app.use('/users', users);
 require('./routes/game-sessions')(app);
+require('./routes/questions')(app);
 
 // catch 404 and forward to error handler
 app.use(errWrap((req, res, next) => {
@@ -76,6 +77,7 @@ app.use(function (err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error
+  console.log('Error: ', err.message);
   res.status(err.status || 500);
   res.send({ message: err.message });
 });
