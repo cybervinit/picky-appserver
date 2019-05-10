@@ -1,0 +1,9 @@
+{
+	"apps": [{
+		"name": "web",
+		"script": "./src//bin/www",
+		"watch": ["./src"],
+		"ignore_watch": ["node_modules"],
+		"env": {}
+	}]
+}

@@ -29,7 +29,6 @@ coverage
 # Environment
 *.env
 *docker-compose.yml
-pm2.json
 
 # docs
 apidoc/*

@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const { User } = require('../schemas/user');
 const { errWrap, errHandler, end, reqLog, isValidUsername, isPhoneValid } = require('../config/basic.js');
 const assert = require('assert');
-const { SUCCESS_PAYLOAD } = require('../helpers/constants');
+const { MSG_SUCCESS } = require('../config/constants');
 const authHelper = require('../helpers/authenticate');
 
 /**
@@ -38,7 +38,7 @@ router.get('/isUsernameValid', errWrap(async (req, res, next) => {
   assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
   const preexistent = await User.findOne({ username: newUsername });
   assert.strictEqual(preexistent, null, 'username already exists');
-  res.send(SUCCESS_PAYLOAD);
+  res.send(MSG_SUCCESS);
   res.end();
 }));
 
@@ -65,7 +65,7 @@ router.post('/updateUsername', errWrap(async (req, res, next) => {
   }, { new: true });
   req.user.username = user.username;
   req.user.isNewAccount = false;
-  res.send(SUCCESS_PAYLOAD);
+  res.send(MSG_SUCCESS);
   res.end();
 }));
 
@@ -153,7 +153,7 @@ router.post('/sendFollowRequest/:reqSender/:reqReceiver', authHelper.isUserAuthe
   assert.notStrictEqual(sender, receiver, "can't send yourself a request");
   assert.strictEqual(0, receiver.followRequests.length, 'already requested');
   await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } });
-  end(res, SUCCESS_PAYLOAD);
+  end(res, MSG_SUCCESS);
 }));
 
 module.exports = router;
