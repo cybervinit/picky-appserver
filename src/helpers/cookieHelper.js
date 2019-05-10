@@ -2,7 +2,7 @@
 const addUserToGameSession = (username, cookie) => { cookie.game_session.users.push(username); };
 const updateGameSession = (gs, cookie) => {
   cookie.game_session = cookie.game_session ? cookie.game_session : {};
-  cookie.game_session = Object.assign({}, gs._doc);
+  cookie.game_session = Object.assign({}, gs.toObject());
 };
 const setCurrUser = (username, cookie) => {
   cookie.user = {};
