@@ -39,7 +39,7 @@ app.use(cookieSession({
 }));
 
 app.get('/', (req, res) => {
-  res.send('Welcome to picky!');
+  res.send('Welcome to picky! v0.0.1');
 });
 
 app.use((req, res, next) => {
