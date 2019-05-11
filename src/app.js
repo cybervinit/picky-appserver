@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
 
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
-  req.sessionOptions.secure = false;
+  console.log(req.sessionOptions);
   console.log(req.headers.origin);
   if (req.app.get('env')) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
