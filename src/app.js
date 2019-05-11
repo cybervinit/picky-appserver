@@ -30,6 +30,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // PASSPORT
+app.set('trust proxy');
 app.use(cookieSession({
   name: 'user',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
