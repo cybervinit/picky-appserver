@@ -35,9 +35,7 @@ app.use(cookieSession({
   name: 'user',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
-  secure: false,
-  httpOnly: false,
-  secureProxy: false
+  httpOnly: false
 }));
 
 app.get('/', (req, res) => {
@@ -46,7 +44,6 @@ app.get('/', (req, res) => {
 
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
-  console.log(req.sessionOptions);
   console.log(req.headers.origin);
   if (req.app.get('env')) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
