@@ -29,16 +29,18 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// PASSPORT
 app.use(cookieSession({
   name: 'user',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
-  secure: false
+  secure: false,
+  secureProxy: false
 }));
 
 app.get('/', (req, res) => {
-  res.send('Welcome to picky! v0.0.3');
+  res.send('Welcome to picky! v0.0.1');
 });
 
 app.use((req, res, next) => {
