@@ -33,11 +33,12 @@ app.use(cookieSession({
   name: 'user',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
-  httpOnly: false
+  httpOnly: false,
+  secure: false
 }));
 
 app.get('/', (req, res) => {
-  res.send('Welcome to picky! v0.0.2');
+  res.send('Welcome to picky! v0.0.3');
 });
 
 app.use((req, res, next) => {
