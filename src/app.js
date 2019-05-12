@@ -33,6 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('trust proxy');
 app.use(cookieSession({
   name: 'user',
+  domain: 'pickystaging.herokuapp.com',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
