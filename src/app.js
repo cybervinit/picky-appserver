@@ -9,9 +9,6 @@ const users = require('./routes/users');
 const auth = require('./routes/authenticate');
 const { errWrap } = require('./config/basic');
 // const cors = require('cors');
-const {
-  MSG_SUCCESS
-} = require('./config/constants');
 
 mongoose.connect(process.env.PICKY_DB_URL || 'mongodb://localhost/test', { useNewUrlParser: true });
 mongoose.Promise = global.Promise;
@@ -45,6 +42,7 @@ app.use(cookieSession({
 
 app.get('/', (req, res) => {
   res.send('Welcome to picky! v0.0.1');
+  req.session.game = 'Picky';
 });
 
 app.use((req, res, next) => {
@@ -66,10 +64,6 @@ app.use((req, res, next) => {
 
 // Sets up authorization routes
 auth(app);
-app.get('/', async (req, res, next) => {
-  req.session.game = 'Picky';
-  res.send(MSG_SUCCESS);
-});
 require('./routes/friends')(app);
 app.use('/users', users);
 require('./routes/game-sessions')(app);
