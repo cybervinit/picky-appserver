@@ -30,10 +30,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // PASSPORT
-app.set('trust proxy');
 app.use(cookieSession({
   name: 'user',
-  domain: 'pickystaging.herokuapp.com',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
@@ -42,8 +40,8 @@ app.use(cookieSession({
 }));
 
 app.get('/', (req, res) => {
-  res.send('Welcome to picky! v0.0.1');
   req.session.game = 'Picky';
+  res.send('Welcome to picky! v0.0.1');
 });
 
 app.use((req, res, next) => {
