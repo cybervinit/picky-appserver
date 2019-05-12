@@ -39,11 +39,6 @@ app.use(cookieSession({
   secureProxy: false
 }));
 
-app.get('/', (req, res) => {
-  req.session.game = 'Picky';
-  res.send('Welcome to picky! v0.0.1');
-});
-
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
   console.log(req.headers.origin);
@@ -59,6 +54,11 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+
+app.get('/', (req, res) => {
+  req.session.game = 'Picky';
+  res.send('Welcome to picky! v0.0.1');
 });
 
 // Sets up authorization routes
