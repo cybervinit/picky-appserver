@@ -44,6 +44,7 @@ module.exports = app => {
 
   app.post('/game-sessions/make/:gameSessionName', errWrap(async (req, res, next) => {
     const { gameSessionName } = req.params;
+    res.setHeader('Set-Cookie', 'VINIT IT CAME');
     const existingGameSession = await R.pipeP(getGameSession)(gameSessionName);
     if (existingGameSession) {
       c.updateGameSession(existingGameSession, req.session);
