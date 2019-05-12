@@ -41,8 +41,8 @@ app.use(cookieSession({
 
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
-  console.log(req.headers.origin);
   if (req.app.get('env')) {
+    console.log(req.headers.origin);
     res.setHeader('Access-Control-Allow-Origin', 'http://picky_rc1.surge.sh');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
