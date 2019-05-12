@@ -45,7 +45,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://picky_rc1.surge.sh');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Headers', 'content-type'); // Add headers (sent from CORS request) here
+    res.setHeader('Access-Control-Allow-Headers', 'content-type, Set-Cookie'); // Add headers (sent from CORS request) here
     // TODO: switch to use the cors npm package
   }
   if (req.method === 'OPTIONS') {
