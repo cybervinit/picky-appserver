@@ -38,10 +38,11 @@ app.use(cookieSession({
   secure: false
 }));
 
+app.set('trust proxy');
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
   if (req.app.get('env')) {
-    console.log(req.headers.origin);
+    console.log('Origin: ', req.headers.origin);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
