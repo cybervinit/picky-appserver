@@ -35,8 +35,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
-  secure: false,
-  secureProxy: false
+  secure: false
 }));
 
 app.use((req, res, next) => {
