@@ -38,7 +38,7 @@ app.use(cookieSession({
   secure: false
 }));
 
-app.set('trust proxy');
+app.set('trust proxy', 1);
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
   if (req.app.get('env')) {
