@@ -44,8 +44,8 @@ app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
   if (req.app.get('env')) {
     // req.headers.origin
-    console.log('Origin: ', 'http://localhost:4200');
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+    console.log('Origin: ', 'http://localhost');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Add headers (sent from CORS request) here
