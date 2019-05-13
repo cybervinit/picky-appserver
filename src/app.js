@@ -36,7 +36,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
-  secure: false,
+  secure: true,
   secureProxy: false
 }));
 
@@ -48,7 +48,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Headers', 'content-type'); // Add headers (sent from CORS request) here
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Add headers (sent from CORS request) here
     // TODO: switch to use the cors npm package
   }
   if (req.method === 'OPTIONS') {
