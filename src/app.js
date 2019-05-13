@@ -37,7 +37,7 @@ app.use(cookieSession({
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
   secure: false,
-  secureProxy: true
+  secureProxy: false
 }));
 
 app.use((req, res, next) => {
