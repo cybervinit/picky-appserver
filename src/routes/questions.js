@@ -24,7 +24,7 @@ module.exports = app => {
       c.getGameSessionName(req.session)
     );
     c.updateGameSession(gs, req.session);
-    res.send(MSG_SUCCESS);
+    res.send(req.session);
   }));
 
   app.post('/questions/answer', errWrap(async (req, res, next) => {
@@ -35,7 +35,7 @@ module.exports = app => {
       answerIndex
     );
     c.updateGameSession(gs, req.session);
-    res.send(MSG_SUCCESS);
+    res.send(req.session);
   }));
 
   app.post('/questions/new', errWrap(async (req, res, next) => {
@@ -45,12 +45,12 @@ module.exports = app => {
     } = req.body;
     if (pass !== 'vinso1') throw err('Unauthenticated attempt to add question', 404);
     await db.addQuestion(question);
-    res.send(MSG_SUCCESS);
+    res.send(req.session);
   }));
 
   app.get('/questions/answer', errWrap(async (req, res, next) => {
     const gs = await db.getGameSession(c.getGameSessionName(req.session));
     c.updateGameSession(gs, req.session);
-    res.send(MSG_SUCCESS);
+    res.send(req.session);
   }));
 };
