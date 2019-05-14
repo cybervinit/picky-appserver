@@ -43,15 +43,15 @@ app.use(cookieSession({
 
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
-  if (req.app.get('env') === 'production') {
-    res.setHeader('Access-Control-Allow-Origin', "https://www.piky.me");
+  if (req.app.get('env')) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Add headers (sent from CORS request) here
+    // TODO: switch to use the cors npm package
   } else if (req.app.get('env') === 'development') {
     res.setHeader('Access-Control-Allow-Origin', "http://localhost:4200");
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Add headers (sent from CORS request) here
-  // TODO: switch to use the cors npm package
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {

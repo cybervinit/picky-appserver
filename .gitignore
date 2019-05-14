@@ -35,3 +35,7 @@ apidoc/*
 
 # Webstorm
 .idea
+
+server.*
+api_piky_me.crt
+
