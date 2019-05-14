@@ -43,10 +43,10 @@ app.use(cookieSession({
 
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
-  if (req.app.get('env')) {
+  if (req.headers.origin === 'https://www.piky.me') {
     res.setHeader('Access-Control-Allow-Origin', 'https://www.piky.me');
     // if (req.headers.origin !== 'https://www.piky.me') return; // TODO: throw 403 Forbidden
-  } else if (req.app.get('env') === 'development') {
+  } else if (req.headers.origin === 'http://localhost:4200') {
     res.setHeader('Access-Control-Allow-Origin', "http://localhost:4200");
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
