@@ -20,7 +20,7 @@ module.exports = app => {
     const gameSession = await getGameSession(c.getGameSessionName(req.session));
     assert.ok(gameSession, "GameSession doesn't exist");
     c.updateGameSession(gameSession, req.session);
-    res.send(req.session);
+    res.send(MSG_SUCCESS);
   }));
 
   app.post('/game-sessions/:gameSessionName/add-user', errWrap(async (req, res, next) => {
@@ -39,7 +39,7 @@ module.exports = app => {
         ? lockGameSessionAndStartCountdown(gs.name) : gs,
       (gs) => c.updateGameSession(gs, req.session)
     )(gameSessionName);
-    res.send(req.session);
+    res.send(MSG_SUCCESS);
   }));
 
   app.post('/game-sessions/make/:gameSessionName', errWrap(async (req, res, next) => {
@@ -49,12 +49,12 @@ module.exports = app => {
     if (existingGameSession) {
       c.updateGameSession(existingGameSession, req.session);
       if (!existingGameSession.isGameSessionFree) throw err('game session busy', 200);
-      res.send(req.session);
+      res.send(MSG_SUCCESS);
       return;
     }
     const gameSession = await addGameSession(gameSessionName);
     c.updateGameSession(gameSession, req.session);
-    res.send(req.session);
+    res.send(MSG_SUCCESS);
   }));
 
   /** @temporary */
