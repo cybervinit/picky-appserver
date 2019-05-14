@@ -45,7 +45,6 @@ app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
   if (req.app.get('env') === 'production') {
     res.setHeader('Access-Control-Allow-Origin', "https://www.piky.me");
-    if (req.headers.origin !== "https://www.piky.me") return;
   } else if (req.app.get('env') === 'development') {
     res.setHeader('Access-Control-Allow-Origin', "http://localhost:4200");
   }
