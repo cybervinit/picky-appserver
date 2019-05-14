@@ -43,15 +43,16 @@ app.use(cookieSession({
 
 app.use((req, res, next) => {
   /* req.app.get('env') === 'development' */
-  if (req.app.get('env')) {
-    // req.headers.origin
-    console.log('Origin: ', "req.headers.origin");
+  if (req.app.get('env') === 'production') {
     res.setHeader('Access-Control-Allow-Origin', "https://www.piky.me");
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Add headers (sent from CORS request) here
-    // TODO: switch to use the cors npm package
+    if (req.headers.origin !== "https://www.piky.me") return;
+  } else if (req.app.get('env') === 'development') {
+    res.setHeader('Access-Control-Allow-Origin', "http://localhost:4200");
   }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Add headers (sent from CORS request) here
+  // TODO: switch to use the cors npm package
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -60,8 +61,8 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  req.session.game = 'Picky';
-  res.send('Welcome to picky! v0.0.1');
+  req.session.game = 'Piky';
+  res.send('Piky API');
 });
 
 // Sets up authorization routes
