@@ -61,10 +61,16 @@ app.use((req, res, next) => {
   }
 });
 
-app.get('/', (req, res) => {
+app.get('/', (req, res, next) => {
   req.session.game = 'Piky';
   res.send('Piky API');
 });
+
+app.get('/postcheck', (req, res, next) => {
+  const body = req.body;
+  console.log(body);
+  res.send({ message: "success" });
+})
 
 // Sets up authorization routes
 auth(app);
