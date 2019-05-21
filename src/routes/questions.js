@@ -43,7 +43,7 @@ module.exports = app => {
       pass,
       question
     } = req.body;
-    if (pass !== 'vinso1') throw err('Unauthenticated attempt to add question', 404);
+    if (pass !== process.env.ADMIN_AUTH_CODE) throw err('Unauthenticated attempt to add question', 404);
     await db.addQuestion(question);
     res.send(MSG_SUCCESS);
   }));
