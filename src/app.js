@@ -66,7 +66,7 @@ app.get('/', (req, res, next) => {
   res.send('Piky API');
 });
 
-app.get('/postcheck', (req, res, next) => {
+app.post('/postcheck', (req, res, next) => {
   const body = req.body;
   console.log(body);
   res.send({ message: "success" });
