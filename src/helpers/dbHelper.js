@@ -170,6 +170,27 @@ const removeMyPreviousQuestion = async (username, gsName) => {
   );
 };
 
+const removeSeenQuestions = async (gameSessionName) => {
+  await GameSession.update({ name: gameSessionName },
+    { $pull:
+      {
+        questions: {
+          isSeen: true
+        }
+      }
+    }
+  );
+};
+
+const setAnswerSeen = async (gameSessionId, qId) => {
+  await GameSession.findOneAndUpdate(
+    { _id: gameSessionId, 'questions._id': qId },
+    {
+      $set: { 'questions.$.isSeen': true }
+    }
+  );
+};
+
 module.exports = {
   addUser,
   addFriend,
@@ -186,5 +207,7 @@ module.exports = {
   getRandomQuestion,
   addQuestionToGameSession,
   answerQuestion,
-  removeMyPreviousQuestion
+  removeMyPreviousQuestion,
+  removeSeenQuestions,
+  setAnswerSeen
 };

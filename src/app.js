@@ -38,7 +38,7 @@ app.use(cookieSession({
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
   secure: false,
-  domain: '.piky.me',
+  domain: 'localhost', // '.piky.me',
   secureProxy: false
 }));
 
@@ -69,8 +69,8 @@ app.get('/', (req, res, next) => {
 app.post('/postcheck', (req, res, next) => {
   const body = req.body;
   console.log(body);
-  res.send({ message: "success" });
-})
+  res.send({ message: 'success' });
+});
 
 // Sets up authorization routes
 auth(app);

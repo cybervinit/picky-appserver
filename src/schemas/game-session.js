@@ -10,7 +10,8 @@ const GameSessionSchema = new Schema({
     answerer: String,
     question: { type: Schema.Types.ObjectId, ref: 'Question' },
     answer: Number,
-    isAnswered: { type: Boolean, default: false }
+    isAnswered: { type: Boolean, default: false },
+    isSeen: { type: Boolean, default: false }
   }]
 });
 
