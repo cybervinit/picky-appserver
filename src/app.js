@@ -38,7 +38,7 @@ app.use(cookieSession({
   keys: [process.env.COOKIE_SESSION_KEYS],
   httpOnly: false,
   secure: false,
-  domain: '.piky.me',
+  domain: process.env.COOKIE_DOMAIN,
   secureProxy: false
 }));
 
