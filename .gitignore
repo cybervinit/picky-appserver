@@ -29,10 +29,16 @@ coverage
 # Environment
 *.env
 *docker-compose.yml
-pm2.json
 
 # docs
 apidoc/*
 
 # Webstorm
 .idea
+<<<<<<< HEAD
+=======
+
+server.*
+api_piky_me.crt
+
+>>>>>>> c58190541e4508be61e9fce75d75bc8b88302e35

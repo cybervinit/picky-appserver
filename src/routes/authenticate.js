@@ -1,8 +1,10 @@
 const passport = require('passport');
+const jwt = require('jsonwebtoken');
 const GoogleStrategy = require('passport-google-oauth20');
 const GoogleIdTokenStrategy = require('passport-google-id-token');
 const authHelper = require('../helpers/authenticate');
-const { User } = require('../models');
+const { User } = require('../schemas/user');
+const dbHelper = require('../helpers/dbHelper');
 
 module.exports = (app) => {
   app.use(passport.initialize()); // Used to initialize passport
@@ -64,8 +66,19 @@ module.exports = (app) => {
   }));
 
   // The middleware receives the data from Google and runs the function on Strategy config
-  app.get('/auth/google/callback', passport.authenticate('google'), (req, res) => {
-    res.redirect('/secret');
+  app.get('/auth/google/callback', passport.authenticate('google'), async (req, res) => {
+    const {id, name} = req.user;
+    const {familyName, givenName} = name;
+    const userInfo = {
+      googleId: id,
+      firstName: familyName,
+      lastName: givenName
+    };
+    const user = await dbHelper.addUser(userInfo);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'pass', {
+      expiresIn: 8640000
+    });
+    res.send({token, message: 'User has been authenticated'});
   });
 
   // Secret route, example on how to restrict access to routes.

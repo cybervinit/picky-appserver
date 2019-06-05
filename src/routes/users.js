@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { User } = require('../models');
+const { User } = require('../schemas/user');
 const { errWrap, errHandler, end, reqLog, isValidUsername, isPhoneValid } = require('../config/basic.js');
 const assert = require('assert');
-const { SUCCESS_PAYLOAD } = require('../helpers/constants');
+const { MSG_SUCCESS } = require('../config/constants');
 const authHelper = require('../helpers/authenticate');
 
 /**
@@ -38,7 +38,7 @@ router.get('/isUsernameValid', errWrap(async (req, res, next) => {
   assert(isValidUsername(newUsername), 'username must be between 3-20 characters');
   const preexistent = await User.findOne({ username: newUsername });
   assert.strictEqual(preexistent, null, 'username already exists');
-  res.send(SUCCESS_PAYLOAD);
+  res.send(MSG_SUCCESS);
   res.end();
 }));
 
@@ -65,7 +65,7 @@ router.post('/updateUsername', errWrap(async (req, res, next) => {
   }, { new: true });
   req.user.username = user.username;
   req.user.isNewAccount = false;
-  res.send(SUCCESS_PAYLOAD);
+  res.send(MSG_SUCCESS);
   res.end();
 }));
 
@@ -123,7 +123,6 @@ router.get('/usernameAvailable/:username', errWrap(async (req, res, next) => {
  */
 router.get('/getPersonalInfo', authHelper.isUserAuthenticated, errWrap(async (req, res, next) => {
   reqLog(req);
-  console.log(req.session);
   const { username } = req.session.passport.user;
   assert.notStrictEqual(username, undefined, 'username undefined');
   const user = await User.findOne({ 'username': username }, { followRequests: 1 });
@@ -145,7 +144,6 @@ router.get('/getPersonalInfo', authHelper.isUserAuthenticated, errWrap(async (re
  */
 router.post('/sendFollowRequest/:reqSender/:reqReceiver', authHelper.isUserAuthenticated, errWrap(async (req, res, next) => { // TODO: auth
   reqLog(req);
-  console.log('Before the session check');
   const { reqSender, reqReceiver } = req.params;
   assert.strictEqual(reqSender, req.query.username, 'usernames don\'t match');
   const sender = await User.findOne({ username: reqSender });
@@ -153,10 +151,9 @@ router.post('/sendFollowRequest/:reqSender/:reqReceiver', authHelper.isUserAuthe
   assert.notStrictEqual(sender, null, 'sender username is bads');
   assert.notStrictEqual(receiver, null, 'receiver username is bad or already received the request');
   assert.notStrictEqual(sender, receiver, "can't send yourself a request");
-  console.log(receiver);
   assert.strictEqual(0, receiver.followRequests.length, 'already requested');
   await User.update({ username: req.params.reqReceiver }, { $push: { followRequests: req.params.reqSender } });
-  end(res, SUCCESS_PAYLOAD);
+  end(res, MSG_SUCCESS);
 }));
 
 module.exports = router;
