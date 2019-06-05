@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start-local": "node ./src/bin/www",
+    "start": "node ./src/bin/www",
     "backend": "docker-compose up",
-    "start": "concurrently \"npm:backend\" \"npm:frontend\"",
+    "dev": "concurrently \"npm:backend\" \"npm:frontend\"",
     "frontend": "cd ../picky-mvp1 && npm run start"
   },
   "dependencies": {
