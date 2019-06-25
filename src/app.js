@@ -78,6 +78,7 @@ require('./routes/friends')(app);
 app.use('/users', users);
 require('./routes/game-sessions')(app);
 require('./routes/questions')(app);
+require('./routes/rooms')(app);
 
 // catch 404 and forward to error handler
 app.use(errWrap((req, res, next) => {
