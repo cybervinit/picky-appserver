@@ -66,6 +66,11 @@ app.get('/', (req, res, next) => {
   res.send('Piky API');
 });
 
+app.get('/testing', (req, res, next) => {
+  req.session.game = 'Piky';
+  res.send('Piky API working on testing endpoint.');
+});
+
 app.post('/postcheck', (req, res, next) => {
   const body = req.body;
   console.log(body);
