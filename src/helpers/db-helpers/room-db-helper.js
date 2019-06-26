@@ -9,6 +9,12 @@ const createRoom = async (urlId, users) => {
   return room;
 };
 
+const getRoomByUrlId = async (urlId) => {
+  const room = await Room.findOne({ urlId });
+  return room;
+};
+
 module.exports = {
-  createRoom
+  createRoom,
+  getRoomByUrlId
 };

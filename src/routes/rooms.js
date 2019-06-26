@@ -25,4 +25,13 @@ module.exports = app => {
       ...MSG_SUCCESS
     });
   }));
+
+  app.get('/rooms/:urlId', errWrap(async (req, res, next) => {
+    const { urlId } = req.params;
+    const room = await db.getRoomByUrlId(urlId);
+    res.send({
+      ...room.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
 };
