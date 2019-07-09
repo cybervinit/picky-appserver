@@ -66,7 +66,6 @@ app.get('/', (req, res, next) => {
   res.send('Piky API');
 });
 
-
 app.get('/testing', (req, res, next) => {
   req.session.game = 'Piky';
   res.send('Piky API working on testing endpoint.');
@@ -84,7 +83,6 @@ require('./routes/friends')(app);
 app.use('/users', users);
 require('./routes/game-sessions')(app);
 require('./routes/questions')(app);
-
 require('./routes/rooms')(app);
 
 
