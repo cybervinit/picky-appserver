@@ -34,4 +34,54 @@ module.exports = app => {
       ...MSG_SUCCESS
     });
   }));
+
+  app.get('/rooms/:urlId/:user/unseencount', errWrap(async (req, res, next) => {
+    const {
+      urlId,
+      user
+    } = req.params;
+    const unseenCount = await db.getUnseenCount(urlId, user);
+    res.send({
+      unseenCount,
+      ...MSG_SUCCESS
+    })
+  }));
+
+  app.post('/rooms/:urlId/add-question', errWrap(async (req, res, next) => {
+    const { urlId } = req.params;
+    const q = await db.addQuestionToRoom(urlId);
+    res.send({
+      ...q.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
+
+  app.get('/rooms/:urlId/:user/question', errWrap(async (req, res, next) => {
+    const { urlId, user } = req.params;
+    const q = await db.getUnansweredQuestion(urlId, user);
+    res.send({
+      ...q.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
+
+  app.post('/rooms/question/:qid', errWrap(async (req, res, next) => {
+    const { qid } = req.params;
+    const { username, answerIndex } = req.body;
+    const q = await db.answerQuestion(qid, username, answerIndex);
+    res.send({
+      ...q.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
+
+  app.get('/rooms/:urlId/:user/answer', errWrap(async (req, res, next) => {
+    const { urlId, user } = req.params;
+    // TODO: here                     v make this query 
+    const qRef = await db.getUnseenAnsweredQuestion(urlId, user);
+    return res.send({
+      ...qRef,
+      ...MSG_SUCCESS
+    });
+  }));
 };
