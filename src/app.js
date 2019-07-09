@@ -66,6 +66,12 @@ app.get('/', (req, res, next) => {
   res.send('Piky API');
 });
 
+
+app.get('/testing', (req, res, next) => {
+  req.session.game = 'Piky';
+  res.send('Piky API working on testing endpoint.');
+});
+
 app.post('/postcheck', (req, res, next) => {
   const body = req.body;
   console.log(body);
@@ -78,6 +84,9 @@ require('./routes/friends')(app);
 app.use('/users', users);
 require('./routes/game-sessions')(app);
 require('./routes/questions')(app);
+
+require('./routes/rooms')(app);
+
 
 // catch 404 and forward to error handler
 app.use(errWrap((req, res, next) => {

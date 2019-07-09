@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./src/bin/www"
+    "start": "node ./src/bin/www",
+    "backend": "docker-compose up",
+    "dev": "concurrently \"npm:backend\" \"npm:frontend\"",
+    "frontend": "cd ../picky-mvp1 && npm run start"
   },
   "dependencies": {
     "apidoc": "^0.17.6",
@@ -11,6 +14,7 @@
     "bluebird": "^3.5.1",
     "body-parser": "~1.18.2",
     "bunyan": "^1.8.12",
+    "concurrently": "^4.1.0",
     "connect-redis": "^3.3.3",
     "cookie-parser": "~1.4.3",
     "cookie-session": "^2.0.0-beta.3",
