@@ -51,11 +51,13 @@ const getUnansweredQuestion = async (urlId, username) => {
 const getUnseenCount = async (urlId, username) => {
   const count = await QuestionRoom.count({
     urlId,
-    users: {
-      $elemMatch: { username: { $ne: username },
-        isSeen: false,
+    users: { $all: [{
+      $elemMatch: {
+        username: { $ne: username },
         answerIndex: { $ne: -1 }}
-    }
+    },
+    { $elemMatch: { username, isSeen: false }}
+  ]}
   });
   return count;
 };
@@ -69,6 +71,27 @@ const answerQuestion = async (qid, user, answerIndex) => {
   return questionRoom;
 };
 
+const getUnseenAnsweredQuestion = async (urlId, username) => {
+  const quesRoom = await QuestionRoom.findOne({
+    urlId, users: { $all: [
+      { $elemMatch: { username, isSeen: false }},
+      { $elemMatch: { username: { $ne: username }, answerIndex: { $ne: -1 }}}
+    ]}
+  }).populate("questionRef");
+  console.log(quesRoom);
+  return quesRoom;
+}
+
+const setAnswerSeen = async (_id, username) => {
+  const quesRoom = await QuestionRoom.findOneAndUpdate({
+    _id,
+    "users.username": username
+  },
+  {
+    "users.$.isSeen": true
+  });
+}
+
 module.exports = {
   createRoom,
   getRoomByUrlId,
@@ -76,5 +99,6 @@ module.exports = {
   getUnansweredQuestion,
   getUnseenCount,
   answerQuestion,
-  getUnseenAnsweredQuestion
+  getUnseenAnsweredQuestion,
+  setAnswerSeen
 };

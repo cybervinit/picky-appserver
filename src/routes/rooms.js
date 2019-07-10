@@ -49,18 +49,18 @@ module.exports = app => {
 
   app.post('/rooms/:urlId/add-question', errWrap(async (req, res, next) => {
     const { urlId } = req.params;
-    const q = await db.addQuestionToRoom(urlId);
+    const quesRoom = await db.addQuestionToRoom(urlId);
     res.send({
-      ...q.toObject(),
+      ...quesRoom.toObject(),
       ...MSG_SUCCESS
     });
   }));
 
   app.get('/rooms/:urlId/:user/question', errWrap(async (req, res, next) => {
     const { urlId, user } = req.params;
-    const q = await db.getUnansweredQuestion(urlId, user);
+    const quesRoom = await db.getUnansweredQuestion(urlId, user);
     res.send({
-      ...q.toObject(),
+      ...quesRoom.toObject(),
       ...MSG_SUCCESS
     });
   }));
@@ -68,19 +68,19 @@ module.exports = app => {
   app.post('/rooms/question/:qid', errWrap(async (req, res, next) => {
     const { qid } = req.params;
     const { username, answerIndex } = req.body;
-    const q = await db.answerQuestion(qid, username, answerIndex);
+    const quesRoom = await db.answerQuestion(qid, username, answerIndex);
     res.send({
-      ...q.toObject(),
+      ...quesRoom.toObject(),
       ...MSG_SUCCESS
     });
   }));
 
   app.get('/rooms/:urlId/:user/answer', errWrap(async (req, res, next) => {
     const { urlId, user } = req.params;
-    // TODO: here                     v make this query 
-    const qRef = await db.getUnseenAnsweredQuestion(urlId, user);
+    const quesRoom = await db.getUnseenAnsweredQuestion(urlId, user);
+    await db.setAnswerSeen(quesRoom._id, user);
     return res.send({
-      ...qRef,
+      ...quesRoom.toObject(),
       ...MSG_SUCCESS
     });
   }));
