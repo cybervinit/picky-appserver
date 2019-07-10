@@ -34,4 +34,54 @@ module.exports = app => {
       ...MSG_SUCCESS
     });
   }));
+
+  app.get('/rooms/:urlId/:user/unseencount', errWrap(async (req, res, next) => {
+    const {
+      urlId,
+      user
+    } = req.params;
+    const unseenCount = await db.getUnseenCount(urlId, user);
+    res.send({
+      unseenCount,
+      ...MSG_SUCCESS
+    })
+  }));
+
+  app.post('/rooms/:urlId/add-question', errWrap(async (req, res, next) => {
+    const { urlId } = req.params;
+    const quesRoom = await db.addQuestionToRoom(urlId);
+    res.send({
+      ...quesRoom.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
+
+  app.get('/rooms/:urlId/:user/question', errWrap(async (req, res, next) => {
+    const { urlId, user } = req.params;
+    const quesRoom = await db.getUnansweredQuestion(urlId, user);
+    res.send({
+      ...quesRoom.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
+
+  app.post('/rooms/question/:qid', errWrap(async (req, res, next) => {
+    const { qid } = req.params;
+    const { username, answerIndex } = req.body;
+    const quesRoom = await db.answerQuestion(qid, username, answerIndex);
+    res.send({
+      ...quesRoom.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
+
+  app.get('/rooms/:urlId/:user/answer', errWrap(async (req, res, next) => {
+    const { urlId, user } = req.params;
+    const quesRoom = await db.getUnseenAnsweredQuestion(urlId, user);
+    await db.setAnswerSeen(quesRoom._id, user);
+    return res.send({
+      ...quesRoom.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
 };
