@@ -1,4 +1,8 @@
 const R = require('ramda');
+const assert = require('assert');
+const {
+  MSG_SUCCESS
+} = require('../config/constants');
 const {
   errWrap,
   err
@@ -7,22 +11,16 @@ const {
   getGameSession,
   addGameSession,
   addUserToGameSession,
-  lockGameSession
+  lockGameSessionAndStartCountdown
 } = require('../helpers/dbHelper');
 const c = require('../helpers/cookieHelper');
 
 module.exports = app => {
-  app.get('/game-sessions/:gameSessionName', errWrap(async (req, res, next) => {
-    const { gameSessionName } = req.params;
-    const gameSession = await getGameSession(gameSessionName);
-    res.send({
-      payload: {
-        isGameSessionFree: gameSession ? gameSession.isGameSessionFree : true,
-        name: gameSessionName,
-        users: gameSession ? gameSession.name : null
-      },
-      message: 'success'
-    });
+  app.get('/game-sessions/:gameSessionName', errWrap(async (req, res, next) => { // TODO: change to only use cookie game session and not by path params
+    const gameSession = await getGameSession(c.getGameSessionName(req.session));
+    assert.ok(gameSession, "GameSession doesn't exist");
+    c.updateGameSession(gameSession, req.session);
+    res.send(MSG_SUCCESS);
   }));
 
   app.post('/game-sessions/:gameSessionName/add-user', errWrap(async (req, res, next) => {
@@ -33,35 +31,49 @@ module.exports = app => {
       (gs) => {
         if (gs.isGameSessionFree) {
           c.setCurrUser(username, req.session);
-          c.addUserToGameSession(username, req.session);
           return addUserToGameSession(username, gs.name);
         }
         return gs;
       },
       (gs) => (gs.users.length >= 2 && gs.isGameSessionFree) // lock if game session full
-        ? lockGameSession(gs.name) : gs
+        ? lockGameSessionAndStartCountdown(gs.name) : gs,
+      (gs) => c.updateGameSession(gs, req.session)
     )(gameSessionName);
-    res.send({ message: 'success' });
+    res.send(MSG_SUCCESS);
   }));
 
   app.post('/game-sessions/make/:gameSessionName', errWrap(async (req, res, next) => {
     const { gameSessionName } = req.params;
+    res.setHeader('Set-Cookie', 'VINIT IT CAME');
     const existingGameSession = await R.pipeP(getGameSession)(gameSessionName);
     if (existingGameSession) {
-      c.initGameSession(existingGameSession, req.session);
+      c.updateGameSession(existingGameSession, req.session);
       if (!existingGameSession.isGameSessionFree) throw err('game session busy', 200);
-      res.send({ message: 'success' });
+      res.send(MSG_SUCCESS);
       return;
     }
     const gameSession = await addGameSession(gameSessionName);
-    c.initGameSession(gameSession, req.session);
-    res.send({
-      payload: {
-        isGameSessionFree: !!gameSession,
-        gameSession: {
-          name: gameSession.name
-        }},
-      message: 'success'
-    });
+    c.updateGameSession(gameSession, req.session);
+    res.send(MSG_SUCCESS);
+  }));
+
+  /** @temporary */
+  app.get('/random', errWrap(async (req, res, next) => {
+    res.send(MSG_SUCCESS);
+  }));
+
+  /** @temporary */
+  app.get('/buddy_answer', errWrap(async (req, res, next) => {
+    res.send({ buddyAnswer: 'YOU ROCK BRO', ...MSG_SUCCESS });
+  }));
+
+  /** @temporary */
+  app.get('/gimme_question', errWrap(async (req, res, next) => {
+    res.send({ question: 'WHAT IS HIS FAVOURITE BAND?' });
+  }));
+
+  /** @temporary */
+  app.post('/random', errWrap(async (req, res, next) => {
+    res.send(MSG_SUCCESS);
   }));
 };

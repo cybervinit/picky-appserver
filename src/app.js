@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const logger = require('morgan');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -26,19 +26,55 @@ const app = express();
 app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // PASSPORT
+app.set('trust proxy');
+
 app.use(cookieSession({
   name: 'user',
   maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
   keys: [process.env.COOKIE_SESSION_KEYS],
-  httpOnly: false
+  httpOnly: false,
+  secure: false,
+  domain: process.env.COOKIE_DOMAIN,
+  secureProxy: false
 }));
 
-app.get('/', (req, res) => {
-  res.send('Welcome to picky!');
+app.use((req, res, next) => {
+  /* req.app.get('env') === 'development' */
+  if (req.headers.origin === 'https://www.piky.me') {
+    res.setHeader('Access-Control-Allow-Origin', 'https://www.piky.me');
+    // if (req.headers.origin !== 'https://www.piky.me') return; // TODO: throw 403 Forbidden
+  } else if (req.headers.origin === 'http://localhost:4200') {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Add headers (sent from CORS request) here
+  // TODO: switch to use the cors npm package
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
+app.get('/', (req, res, next) => {
+  req.session.game = 'Piky';
+  res.send('Piky API');
+});
+
+app.get('/testing', (req, res, next) => {
+  req.session.game = 'Piky';
+  res.send('Piky API working on testing endpoint.');
+});
+
+app.post('/postcheck', (req, res, next) => {
+  const body = req.body;
+  console.log(body);
+  res.send({ message: 'success' });
 });
 
 app.use((req, res, next) => {
@@ -61,6 +97,8 @@ auth(app);
 require('./routes/friends')(app);
 app.use('/users', users);
 require('./routes/game-sessions')(app);
+require('./routes/questions')(app);
+require('./routes/rooms')(app);
 
 // catch 404 and forward to error handler
 app.use(errWrap((req, res, next) => {
@@ -76,6 +114,7 @@ app.use(function (err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error
+  console.log('Error: ', err.message);
   res.status(err.status || 500);
   res.send({ message: err.message });
 });
