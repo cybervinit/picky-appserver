@@ -84,4 +84,14 @@ module.exports = app => {
       ...MSG_SUCCESS
     });
   }));
+
+  app.post('/rooms/:urlId/:username/tip-seen', errWrap(async (req, res, next) => {
+    const { urlId, username } = req.params;
+    const { tipIndex } = req.body;
+    const room = await db.setTipSeen(urlId, username, tipIndex);
+    return res.send({
+      ...room.toObject(),
+      ...MSG_SUCCESS
+    });
+  }));
 };

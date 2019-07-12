@@ -3,7 +3,10 @@ const { getRandomQuestion } = require("../dbHelper");
 const R = require('ramda');
 
 
-const createRoom = async (urlId, users) => {
+const createRoom = async (urlId, usernames) => {
+  const users = usernames.map(username => {
+    return { username, tipsSeen: [false, false, false]}
+  });
   const room = await Room.create({
     urlId,
     users
@@ -23,7 +26,7 @@ const addQuestionToRoom = async (urlId) => {
     questionRef: question._id,
     urlId,
     users: users.map(u => {
-      return { username: u, isSeen: false, answerIndex: -1 }
+      return { username: u.username, isSeen: false, answerIndex: -1 }
     })
   };
   const questionRoom = await QuestionRoom.create(qr);
@@ -92,6 +95,17 @@ const setAnswerSeen = async (_id, username) => {
   });
 }
 
+const setTipSeen = async (urlId, username, tipIndex) => {
+  const room = await Room.findOneAndUpdate({
+    urlId, "users.username": username
+  }, {
+    ["users.$.tipsSeen."+tipIndex]: true
+  }, {
+    new: true
+  })
+  return room;
+};
+
 module.exports = {
   createRoom,
   getRoomByUrlId,
@@ -100,5 +114,6 @@ module.exports = {
   getUnseenCount,
   answerQuestion,
   getUnseenAnsweredQuestion,
-  setAnswerSeen
+  setAnswerSeen,
+  setTipSeen
 };
