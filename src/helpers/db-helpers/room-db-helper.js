@@ -15,8 +15,15 @@ const createRoom = async (urlId, usernames) => {
 };
 
 const getRoomByUrlId = async (urlId) => {
-  const room = await Room.findOne({ urlId });
-  return room;
+  const room = (await Room.findOne({ urlId })).toObject();
+  const unseenCounts = await Promise.all(room.users.map(user => getUnseenCount(urlId, user.username)));
+  const updatedUsers = room.users.map((user, i) => {
+    return {
+      ...user,
+      unseenCount: unseenCounts[i]
+    }
+  });
+  return { ...room, users: updatedUsers };
 };
 
 const addQuestionToRoom = async (urlId) => {

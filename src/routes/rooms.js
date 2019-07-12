@@ -1,7 +1,4 @@
-const {
-  errWrap,
-  err
-} = require('../config/basic');
+const { errWrap } = require('../config/basic');
 const db = require('../helpers/db-helpers/room-db-helper');
 const {
   MSG_SUCCESS
@@ -30,7 +27,7 @@ module.exports = app => {
     const { urlId } = req.params;
     const room = await db.getRoomByUrlId(urlId);
     res.send({
-      ...room.toObject(),
+      ...room,
       ...MSG_SUCCESS
     });
   }));
