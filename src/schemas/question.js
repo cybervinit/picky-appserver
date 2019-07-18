@@ -5,7 +5,8 @@ const questionSchema = new Schema({
   questionText: String,
   options: [{
     optionText: String
-  }]
+  }],
+  dateAdded: Schema.Types.Date
 });
 
 module.exports = mongoose.model('Question', questionSchema);

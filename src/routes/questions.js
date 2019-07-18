@@ -39,13 +39,14 @@ module.exports = app => {
   app.post('/questions/new', errWrap(async (req, res, next) => {
     const {
       pass,
-      question
+      question,
+      dateAdded
     } = req.body;
     if (pass !== process.env.ADMIN_AUTH_CODE) {
       res.send({ message: 'Unauthenticated attempt to add question' });
       return;
     }
-    const newQ = await db.addQuestion(question);
+    const newQ = await db.addQuestion(question, dateAdded);
     res.send({
       ...newQ,
       ...MSG_SUCCESS

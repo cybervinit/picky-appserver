@@ -43,6 +43,9 @@ module.exports = app => {
     });
   }));
 
+  /**
+   * TODO: remove because probably unused
+   */
   app.post('/rooms/:urlId/add-question', errWrap(async (req, res, next) => {
     const { urlId } = req.params;
     const quesRoom = await db.addQuestionToRoom(urlId);

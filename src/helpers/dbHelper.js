@@ -103,14 +103,15 @@ const lockGameSessionAndStartCountdown = async (gameSessionName) => {
   return gameSession;
 };
 
-const addQuestion = async (question) => {
+const addQuestion = async (question, dateAdded) => {
   const {
     questionText,
     options
   } = question;
   const q = await Question.create({
-    questionText: questionText,
-    options: options
+    questionText,
+    options,
+    dateAdded
   });
   return q;
 };
