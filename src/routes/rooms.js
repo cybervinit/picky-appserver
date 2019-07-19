@@ -22,9 +22,9 @@ module.exports = app => {
     });
   }));
 
-  app.get('/rooms/:urlId', errWrap(async (req, res, next) => {
-    const { urlId } = req.params;
-    const room = await db.getRoomByUrlId(urlId);
+  app.get('/rooms/:urlId/:currentDate', errWrap(async (req, res, next) => {
+    const { urlId, currentDate } = req.params;
+    const room = await db.getRoomByUrlId(urlId, currentDate);
     res.send({
       ...room,
       ...MSG_SUCCESS
@@ -55,13 +55,35 @@ module.exports = app => {
     });
   }));
 
-  app.get('/rooms/:urlId/:user/question', errWrap(async (req, res, next) => {
-    const { urlId, user } = req.params;
-    const quesRoom = await db.getUnansweredQuestion(urlId, user);
+  app.post('/rooms/:urlId/:dateAdded/update-date', errWrap(async (req, res, next) => {
+    const { urlId, dateAdded } = req.params;
+    const { currentDate } = await db.getRoomByUrlId(urlId, dateAdded);
+    if (!currentDate || currentDate !== dateAdded) {
+      await db.udpateRoomDate(urlId, dateAdded);
+      await db.addQuestionsToRoom(urlId, dateAdded);
+    }
+    res.send(MSG_SUCCESS);
+  }));
+
+
+  app.get('/rooms/:urlId/:user/:dateAdded/question', errWrap(async (req, res, next) => {
+    const { urlId, user, dateAdded } = req.params;
+    const unansweredQuestionAmount = await db.getUnansweredQuestionAmount(urlId, user, dateAdded);
+    console.log("Unanswered question amount: ", unansweredQuestionAmount);
+    if (!unansweredQuestionAmount) {
+      return res.send({ message: 'all questions for ' + dateAdded + ' answered.' });
+    }
+    const quesRoom = await db.getUnansweredQuestion(urlId, user, dateAdded);
     res.send({
       ...quesRoom.toObject(),
       ...MSG_SUCCESS
     });
+  }));
+
+  app.get('/rooms/:urlId/:user/:dateAdded/questions/unanswered-amount', errWrap(async (req, res, next) => {
+    const { urlId, user, dateAdded } = req.params;
+    const unansweredQuestionAmount = await db.getUnansweredQuestionAmount(urlId, user, dateAdded);
+    res.send({ unansweredQuestionAmount, ...MSG_SUCCESS });
   }));
 
   app.post('/rooms/question/:qid', errWrap(async (req, res, next) => {

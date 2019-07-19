@@ -6,7 +6,8 @@ const roomSchema = new Schema({
   users: [{
     username: Schema.Types.String,
     tipsSeen: [Schema.Types.Boolean]
-  }]
+  }],
+  currentDate: Schema.Types.String
 });
 
 module.exports = mongoose.model('Room', roomSchema);

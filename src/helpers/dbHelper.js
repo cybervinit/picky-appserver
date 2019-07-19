@@ -128,6 +128,11 @@ const getRandomQuestion = async () => {
   return question;
 };
 
+const getQuestionsFrom = async (dateAdded) => {
+  const questions = await Question.find({ dateAdded });
+  return questions;
+};
+
 const addQuestionToGameSession = async (answerer, question, gsName) => {
   const gs = await GameSession.findOneAndUpdate({ name: gsName },
     {
@@ -210,5 +215,6 @@ module.exports = {
   answerQuestion,
   removeMyPreviousQuestion,
   removeSeenQuestions,
-  setAnswerSeen
+  setAnswerSeen,
+  getQuestionsFrom
 };

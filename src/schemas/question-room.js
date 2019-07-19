@@ -8,7 +8,8 @@ const QuestionRoomSchema = new Schema({
     username: Schema.Types.String,
     isSeen: Schema.Types.Boolean,
     answerIndex: { type: Schema.Types.Number, default: -1 }
-  }]
+  }],
+  dateAdded: Schema.Types.String
 });
 
 module.exports = mongoose.model('QuestionRoom', QuestionRoomSchema);
