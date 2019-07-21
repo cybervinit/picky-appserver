@@ -55,6 +55,9 @@ module.exports = app => {
     });
   }));
 
+  /**
+   * Updates the room currentDate and adds QuestionRooms of dateAdded to room
+   */
   app.post('/rooms/:urlId/:dateAdded/update-date', errWrap(async (req, res, next) => {
     const { urlId, dateAdded } = req.params;
     const { currentDate } = await db.getRoomByUrlId(urlId, dateAdded);
@@ -65,11 +68,9 @@ module.exports = app => {
     res.send(MSG_SUCCESS);
   }));
 
-
   app.get('/rooms/:urlId/:user/:dateAdded/question', errWrap(async (req, res, next) => {
     const { urlId, user, dateAdded } = req.params;
     const unansweredQuestionAmount = await db.getUnansweredQuestionAmount(urlId, user, dateAdded);
-    console.log("Unanswered question amount: ", unansweredQuestionAmount);
     if (!unansweredQuestionAmount) {
       return res.send({ message: 'all questions for ' + dateAdded + ' answered.' });
     }

@@ -26,14 +26,13 @@ const getRoomByUrlId = async (urlId, currentDate) => {
       unansweredQuestionAmount: unansweredQuestionAmount[i]
     };
   });
-  console.log(unansweredQuestionAmount);
   return { ...room, users: updatedUsers };
 };
 
 const udpateRoomDate = async (urlId, currentDate) => {
   const updatedRoom = await Room.updateOne({ urlId }, { $set: { currentDate } });
   return updatedRoom;
-}
+};
 
 const addQuestionsToRoom = async (urlId, dateAdded) => {
   const users = (await getRoomByUrlId(urlId)).users;
@@ -52,7 +51,7 @@ const addQuestionsToRoom = async (urlId, dateAdded) => {
     })
   )(dateAdded);
   const questionRooms = await QuestionRoom.insertMany(todaysQuestionRooms);
-  
+
   /** DEPRECATED */
   // const qr = {
   //   questionRef: question._id,
@@ -77,33 +76,15 @@ const getUnansweredQuestionAmount = async (urlId, username, dateAdded) => {
     }
   });
   return unansweredQuestionAmount;
-}
+};
 
 const getUnansweredQuestion = async (urlId, username, dateAdded) => {
-  // TODO: cleanup function
-  console.log("Findind Unanswered question at ", {
-    urlId, username, dateAdded
-  });
-  const q = await R.pipeP(
-    (urlId) => QuestionRoom.findOne({ urlId, dateAdded,
-      users: {
-        $elemMatch: {
-          username, answerIndex: { $eq: -1 }
-        }}}).populate('questionRef'),
-    async (q) => {
-      if (!q) {
-        console.log("SHOULDN'T RUN...");
-        // await addQuestionsToRoom(urlId, dateAdded);
-        return QuestionRoom.findOne({ urlId, dateAdded,
-          users: {
-            $elemMatch: {
-              username, answerIndex: { $eq: -1 }
-            }}}).populate('questionRef');
-      }
-      console.log("Nominal run...");
-      return q;
-    }
-  )(urlId);
+  const q = await QuestionRoom.findOne({ urlId,
+    dateAdded,
+    users: {
+      $elemMatch: {
+        username, answerIndex: { $eq: -1 }
+      }}}).populate('questionRef');
   return q;
 };
 
@@ -145,7 +126,6 @@ const getUnseenAnsweredQuestion = async (urlId, username) => {
       }
     ]}
   }).populate('questionRef');
-  console.log(quesRoom);
   return quesRoom;
 };
 
