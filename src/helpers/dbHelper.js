@@ -103,14 +103,15 @@ const lockGameSessionAndStartCountdown = async (gameSessionName) => {
   return gameSession;
 };
 
-const addQuestion = async (question) => {
+const addQuestion = async (question, dateAdded) => {
   const {
     questionText,
     options
   } = question;
   const q = await Question.create({
-    questionText: questionText,
-    options: options
+    questionText,
+    options,
+    dateAdded
   });
   return q;
 };
@@ -125,6 +126,11 @@ const getRandomQuestion = async () => {
   const randomIndex = Math.floor(Math.random() * qCount);
   const question = await Question.findOne().skip(randomIndex);
   return question;
+};
+
+const getQuestionsFrom = async (dateAdded) => {
+  const questions = await Question.find({ dateAdded });
+  return questions;
 };
 
 const addQuestionToGameSession = async (answerer, question, gsName) => {
@@ -209,5 +215,6 @@ module.exports = {
   answerQuestion,
   removeMyPreviousQuestion,
   removeSeenQuestions,
-  setAnswerSeen
+  setAnswerSeen,
+  getQuestionsFrom
 };

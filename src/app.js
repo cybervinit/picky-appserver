@@ -72,8 +72,6 @@ app.get('/testing', (req, res, next) => {
 });
 
 app.post('/postcheck', (req, res, next) => {
-  const body = req.body;
-  console.log(body);
   res.send({ message: 'success' });
 });
 

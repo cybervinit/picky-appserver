@@ -1,5 +1,5 @@
 const { Room, QuestionRoom } = require('../../schemas');
-const { getRandomQuestion } = require('../dbHelper');
+const { getQuestionsFrom } = require('../dbHelper');
 const R = require('ramda');
 
 const createRoom = async (urlId, usernames) => {
@@ -15,51 +15,76 @@ const createRoom = async (urlId, usernames) => {
   return room;
 };
 
-const getRoomByUrlId = async (urlId) => {
+const getRoomByUrlId = async (urlId, currentDate) => {
   const room = (await Room.findOne({ urlId })).toObject();
   const unseenCounts = await Promise.all(room.users.map(user => getUnseenCount(urlId, user.username)));
+  const unansweredQuestionAmount = await Promise.all(room.users.map(user => getUnansweredQuestionAmount(urlId, user.username, currentDate)));
   const updatedUsers = room.users.map((user, i) => {
     return {
       ...user,
-      unseenCount: unseenCounts[i]
+      unseenCount: unseenCounts[i],
+      unansweredQuestionAmount: unansweredQuestionAmount[i]
     };
   });
   return { ...room, users: updatedUsers };
 };
 
-const addQuestionToRoom = async (urlId) => {
-  const users = (await getRoomByUrlId(urlId)).users;
-  const question = await getRandomQuestion();
-  const qr = {
-    questionRef: question._id,
-    urlId,
-    users: users.map(u => {
-      return { username: u.username, isSeen: false, answerIndex: -1 };
-    })
-  };
-  const questionRoom = await QuestionRoom.create(qr);
-  return questionRoom;
+const udpateRoomDate = async (urlId, currentDate) => {
+  const updatedRoom = await Room.updateOne({ urlId }, { $set: { currentDate } });
+  return updatedRoom;
 };
 
-const getUnansweredQuestion = async (urlId, username) => {
-  const q = await R.pipeP(
-    (urlId) => QuestionRoom.findOne({ urlId,
-      users: {
-        $elemMatch: {
-          username, answerIndex: { $eq: -1 }
-        }}}).populate('questionRef'),
-    async (q) => {
-      if (!q) {
-        await addQuestionToRoom(urlId);
-        return QuestionRoom.findOne({ urlId,
-          users: {
-            $elemMatch: {
-              username, answerIndex: { $eq: -1 }
-            }}}).populate('questionRef');
+const addQuestionsToRoom = async (urlId, dateAdded) => {
+  const users = (await getRoomByUrlId(urlId)).users;
+  // const question = await getRandomQuestion(); // TODO: delete
+  const todaysQuestionRooms = await R.pipeP(
+    getQuestionsFrom,
+    R.map(q => {
+      return {
+        questionRef: q._id,
+        urlId,
+        users: users.map(u => {
+          return { username: u.username, isSeen: false, answerIndex: -1 };
+        }),
+        dateAdded
+      };
+    })
+  )(dateAdded);
+  const questionRooms = await QuestionRoom.insertMany(todaysQuestionRooms);
+
+  /** DEPRECATED */
+  // const qr = {
+  //   questionRef: question._id,
+  //   urlId,
+  //   users: users.map(u => {
+  //     return { username: u.username, isSeen: false, answerIndex: -1 };
+  //   })
+  // };
+  // const questionRoom = await QuestionRoom.create(qr);
+  /** ^^ */
+  return questionRooms;
+};
+
+const getUnansweredQuestionAmount = async (urlId, username, dateAdded) => {
+  const unansweredQuestionAmount = await QuestionRoom.count({
+    urlId,
+    dateAdded,
+    users: {
+      $elemMatch: {
+        username, answerIndex: { $eq: -1 }
       }
-      return q;
     }
-  )(urlId);
+  });
+  return unansweredQuestionAmount;
+};
+
+const getUnansweredQuestion = async (urlId, username, dateAdded) => {
+  const q = await QuestionRoom.findOne({ urlId,
+    dateAdded,
+    users: {
+      $elemMatch: {
+        username, answerIndex: { $eq: -1 }
+      }}}).populate('questionRef');
   return q;
 };
 
@@ -101,7 +126,6 @@ const getUnseenAnsweredQuestion = async (urlId, username) => {
       }
     ]}
   }).populate('questionRef');
-  console.log(quesRoom);
   return quesRoom;
 };
 
@@ -130,7 +154,9 @@ const setTipSeen = async (urlId, username, tipIndex) => {
 module.exports = {
   createRoom,
   getRoomByUrlId,
-  addQuestionToRoom,
+  udpateRoomDate,
+  addQuestionsToRoom,
+  getUnansweredQuestionAmount,
   getUnansweredQuestion,
   getUnseenCount,
   answerQuestion,
