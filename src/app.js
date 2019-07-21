@@ -75,21 +75,6 @@ app.post('/postcheck', (req, res, next) => {
   res.send({ message: 'success' });
 });
 
-app.use((req, res, next) => {
-  if (req.app.get('env') === 'development') {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Headers', 'content-type'); // Add headers (sent from CORS request) here
-    // TODO: switch to use the cors npm package
-  }
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
-
 // Sets up authorization routes
 auth(app);
 require('./routes/friends')(app);
