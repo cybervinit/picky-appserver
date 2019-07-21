@@ -48,7 +48,7 @@ module.exports = app => {
     }
     const newQ = await db.addQuestion(question, dateAdded);
     res.send({
-      ...newQ,
+      ...newQ.toObject(),
       ...MSG_SUCCESS
     });
   }));
