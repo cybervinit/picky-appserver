@@ -5,7 +5,6 @@ const logger = require('morgan');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const users = require('./routes/users');
 const { errWrap } = require('./config/basic');
 // const cors = require('cors');
 
@@ -74,11 +73,10 @@ app.post('/postcheck', (req, res, next) => {
   res.send({ message: 'success' });
 });
 
-require('./routes/friends')(app);
-app.use('/users', users);
 require('./routes/game-sessions')(app);
 require('./routes/questions')(app);
 require('./routes/rooms')(app);
+require('./routes/quiz')(app);
 
 // catch 404 and forward to error handler
 app.use(errWrap((req, res, next) => {
