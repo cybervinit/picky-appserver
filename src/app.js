@@ -6,7 +6,6 @@ const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const users = require('./routes/users');
-const auth = require('./routes/authenticate');
 const { errWrap } = require('./config/basic');
 // const cors = require('cors');
 
@@ -75,8 +74,6 @@ app.post('/postcheck', (req, res, next) => {
   res.send({ message: 'success' });
 });
 
-// Sets up authorization routes
-auth(app);
 require('./routes/friends')(app);
 app.use('/users', users);
 require('./routes/game-sessions')(app);
@@ -85,7 +82,7 @@ require('./routes/rooms')(app);
 
 // catch 404 and forward to error handler
 app.use(errWrap((req, res, next) => {
-  let err = new Error('Endpoint Not Found');
+  const err = new Error('Endpoint Not Found');
   err.status = err.status ? err.status : 404;
   throw err;
 }));
