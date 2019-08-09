@@ -7,8 +7,8 @@ module.exports = app => {
     return res.send(MSG_SUCCESS);
   }));
 
-  app.post('/quiz/:name', errWrap(async (req, res, next) => {
-    const { name } = req.params;
+  app.post('/quiz', errWrap(async (req, res, next) => {
+    const { name } = req.body;
     const newQuiz = await db.createQuizTemplate(name);
     return res.send({ newQuiz, ...MSG_SUCCESS });
   }));
