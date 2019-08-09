@@ -49,6 +49,8 @@ app.use((req, res, next) => {
     // if (req.headers.origin !== 'https://www.piky.me') return; // TODO: throw 403 Forbidden
   } else if (req.headers.origin === 'http://localhost:4200') {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+  } else if (req.headers.origin === 'https://www.vinitsoni.com') {
+    res.setHeader('Access-Control-Allow-Origin', 'https://www.vinitsoni.com');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
