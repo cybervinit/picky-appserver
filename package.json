@@ -18,6 +18,7 @@
     "connect-redis": "^3.3.3",
     "cookie-parser": "~1.4.3",
     "cookie-session": "^2.0.0-beta.3",
+    "crypto-random-string": "^3.0.1",
     "debug": "~2.6.9",
     "express": "~4.15.5",
     "jsonwebtoken": "^8.3.0",
@@ -42,10 +43,10 @@
     "dotenv": "^5.0.1",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
-    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^6.0.1",
-    "eslint-plugin-promise": "^3.7.0",
-    "eslint-plugin-standard": "^3.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
     "winston": "^2.4.2"
   }
 }

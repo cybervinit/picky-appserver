@@ -84,7 +84,7 @@ const getUnansweredQuestion = async (urlId, username, dateAdded) => {
     users: {
       $elemMatch: {
         username, answerIndex: { $eq: -1 }
-      }}}).populate('questionRef');
+      } } }).populate('questionRef');
   return q;
 };
 
@@ -94,11 +94,11 @@ const getUnseenCount = async (urlId, username) => {
     users: { $all: [{
       $elemMatch: {
         username: { $ne: username },
-        answerIndex: { $ne: -1 }}
+        answerIndex: { $ne: -1 } }
     },
     {
       $elemMatch: { username, isSeen: false }
-    }]}
+    }] }
   });
   return count;
 };
@@ -124,7 +124,7 @@ const getUnseenAnsweredQuestion = async (urlId, username) => {
           username: { $ne: username }, answerIndex: { $ne: -1 }
         }
       }
-    ]}
+    ] }
   }).populate('questionRef');
   return quesRoom;
 };
