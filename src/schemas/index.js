@@ -4,6 +4,7 @@ const Room = require('./room');
 const QuestionRoom = require('./question-room');
 const QuizTemplate = require('./quiz-template');
 const QuizQuestion = require('./quiz-question');
+const Quiz = require('./quiz');
 
 module.exports = {
   GameSession,
@@ -11,5 +12,6 @@ module.exports = {
   Room,
   QuestionRoom,
   QuizTemplate,
-  QuizQuestion
+  QuizQuestion,
+  Quiz
 };
