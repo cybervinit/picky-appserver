@@ -3,6 +3,10 @@ const db = require('../helpers/db-helpers/room-db-helper');
 const {
   MSG_SUCCESS
 } = require('../config/constants');
+const {
+  updateRandomQuestionsDate,
+  getQuestionAmountAtDate
+} = require('../helpers/dbHelper');
 
 module.exports = app => {
   app.get('/', errWrap(async (req, res, next) => {
@@ -66,6 +70,17 @@ module.exports = app => {
       await db.addQuestionsToRoom(urlId, dateAdded);
     }
     res.send(MSG_SUCCESS);
+  }));
+
+  app.post('/rooms/add-questions-at-date', errWrap(async (req, res, next) => {
+    const { todaysDate } = req.body;
+    if (!todaysDate) { return res.send({ message: 'must include todaysDate in request body' }); }
+    const qAmount = await getQuestionAmountAtDate(todaysDate);
+    if (qAmount >= 10) {
+      return res.send({ message: 'Already have ' + 10 + ' questions loaded for ' + todaysDate });
+    }
+    const questions = await updateRandomQuestionsDate(10 - qAmount, todaysDate);
+    return res.send({ questions, ...MSG_SUCCESS });
   }));
 
   app.get('/rooms/:urlId/:user/:dateAdded/question', errWrap(async (req, res, next) => {

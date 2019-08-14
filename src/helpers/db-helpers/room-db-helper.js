@@ -51,17 +51,6 @@ const addQuestionsToRoom = async (urlId, dateAdded) => {
     })
   )(dateAdded);
   const questionRooms = await QuestionRoom.insertMany(todaysQuestionRooms);
-
-  /** DEPRECATED */
-  // const qr = {
-  //   questionRef: question._id,
-  //   urlId,
-  //   users: users.map(u => {
-  //     return { username: u.username, isSeen: false, answerIndex: -1 };
-  //   })
-  // };
-  // const questionRoom = await QuestionRoom.create(qr);
-  /** ^^ */
   return questionRooms;
 };
 
