@@ -72,6 +72,20 @@ const getQuestionsFrom = async (dateAdded) => {
   return questions;
 };
 
+const updateRandomQuestionsDate = async (amount, date) => {
+  const qCount = (await getQuestionCount()) - amount;
+  const questions = await Question.find().skip(Math.floor(Math.random() * qCount)).limit(amount);
+  const updatePromises = questions.map(question => {
+    return Question.findOneAndUpdate({ _id: question._id }, { dateAdded: date }, { new: true });
+  });
+  const updatedQuestions = await Promise.all(updatePromises);
+  return updatedQuestions;
+};
+
+const getQuestionAmountAtDate = (date) => {
+  return Question.count({ dateAdded: date });
+};
+
 const addQuestionToGameSession = async (answerer, question, gsName) => {
   const gs = await GameSession.findOneAndUpdate({ name: gsName },
     {
@@ -148,5 +162,7 @@ module.exports = {
   removeMyPreviousQuestion,
   removeSeenQuestions,
   setAnswerSeen,
-  getQuestionsFrom
+  getQuestionsFrom,
+  updateRandomQuestionsDate,
+  getQuestionAmountAtDate
 };
