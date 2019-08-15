@@ -3,7 +3,7 @@ const { QuizTemplate, QuizQuestion, Quiz, QuizAttempt } = require('../../schemas
 
 const createQuizTemplate = async (name) => {
   const quizTemplateId = getRandomString();
-  const newQuiz = await QuizTemplate.create({ name, quizTemplateId });
+  const newQuiz = await QuizTemplate.create({ name, quizTemplateId, totalPoints: 0 });
   return newQuiz.toObject();
 };
 
@@ -11,6 +11,9 @@ const addQuizQuestionToTemplate = async (quizTemplateId, question) => {
   const { questionText, options } = question;
   const newQuestion = await QuizQuestion.create({
     quizTemplateId, questionText, options
+  });
+  await QuizTemplate.findOneAndUpdate({ quizTemplateId }, {
+    $inc: { totalPoints: options.length }
   });
   return newQuestion.toObject();
 };
@@ -50,6 +53,15 @@ const updateQuizAttemptWithAnswer = async (quizAttemptId, answerIndex) => {
 
 const getAllQuizTemplates = () => QuizTemplate.find();
 
+const updateAnswerMatrix = async (quizId, answerMatrix) => {
+  const updatedQuiz = await Quiz.findOneAndUpdate({ quizId }, {
+    answerMatrix
+  }, {
+    new: true
+  });
+  return updatedQuiz.toObject();
+};
+
 module.exports = {
   createQuizTemplate,
   addQuizQuestionToTemplate,
@@ -58,5 +70,6 @@ module.exports = {
   updateQuizWithQuizOwnerAnswer,
   createQuizAttempt,
   updateQuizAttemptWithAnswer,
-  getAllQuizTemplates
+  getAllQuizTemplates,
+  updateAnswerMatrix
 };

@@ -10,7 +10,14 @@ module.exports = app => {
   app.post('/quiz/create', errWrap(async (req, res, next) => {
     const { user, quizTemplateId } = req.body;
     if (!user || !quizTemplateId) return res.send({ message: 'proper request body required' });
-    const quiz = db.createNewQuiz(user, quizTemplateId);
+    const quiz = await db.createNewQuiz(user, quizTemplateId);
+    return res.send({ ...quiz, ...MSG_SUCCESS });
+  }));
+
+  app.post('/quiz/answer-matrix', errWrap(async (req, res, next) => {
+    const { quizId, answerMatrix } = req.body;
+    console.log(quizId);
+    const quiz = await db.updateAnswerMatrix(quizId, answerMatrix);
     return res.send({ ...quiz, ...MSG_SUCCESS });
   }));
 
