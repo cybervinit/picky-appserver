@@ -14,10 +14,10 @@ module.exports = app => {
     return res.send({ ...quiz, ...MSG_SUCCESS });
   }));
 
-  app.get('/quiz/questions/:quizTemplateRef', errWrap(async (req, res, next) => {
-    const { quizTemplateRef } = req.params;
-    const questions = await db.getQuizQuestionsByTemplateId(quizTemplateRef);
-    return res.send({ ...questions, ...MSG_SUCCESS });
+  app.get('/quiz/questions/:quizTemplateId', errWrap(async (req, res, next) => {
+    const { quizTemplateId } = req.params;
+    const questions = await db.getQuizQuestionsByTemplateId(quizTemplateId);
+    return res.send({ questions, ...MSG_SUCCESS });
   }));
 
   app.post('/quiz/answer/quiz-owner', errWrap(async (req, res, next) => {
@@ -44,8 +44,13 @@ module.exports = app => {
   }));
 
   app.post('/quiz/template/add-question', errWrap(async (req, res, next) => {
-    const { quizTemplateRef, question } = req.body;
-    const newQuizQuestion = await db.addQuizQuestionToTemplate(quizTemplateRef, question);
+    const { quizTemplateId, question } = req.body;
+    const newQuizQuestion = await db.addQuizQuestionToTemplate(quizTemplateId, question);
     return res.send({ ...newQuizQuestion, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/templates', errWrap(async (req, res, next) => {
+    const templates = await db.getAllQuizTemplates();
+    return res.send({ templates, ...MSG_SUCCESS });
   }));
 };
