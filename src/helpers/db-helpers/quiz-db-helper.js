@@ -18,10 +18,15 @@ const addQuizQuestionToTemplate = async (quizTemplateId, question) => {
   return newQuestion.toObject();
 };
 
-const createNewQuiz = async (user, quizTemplateId) => {
+const createNewQuiz = async (userFirstName, userPasswordHash2, quizTemplateId) => {
   const quizId = getRandomString();
-  const newQuiz = await Quiz.create({ user, quizId, quizTemplateId });
+  const newQuiz = await Quiz.create({ userFirstName, userPasswordHash2, quizId, quizTemplateId });
   return newQuiz.toObject();
+};
+
+const getQuizByQuizId = async (quizId) => {
+  const quiz = await Quiz.findOne({ quizId });
+  return quiz.toObject();
 };
 
 const getQuizQuestionsByTemplateId = async (quizTemplateId) => {
@@ -71,5 +76,6 @@ module.exports = {
   createQuizAttempt,
   updateQuizAttemptWithAnswer,
   getAllQuizTemplates,
-  updateAnswerMatrix
+  updateAnswerMatrix,
+  getQuizByQuizId
 };

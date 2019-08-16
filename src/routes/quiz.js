@@ -1,4 +1,8 @@
-const { errWrap } = require('../config/basic');
+const {
+  errWrap,
+  getPasswordHash,
+  isPasswordValid
+} = require('../config/basic');
 const { MSG_SUCCESS } = require('../config/constants');
 const db = require('../helpers/db-helpers/quiz-db-helper');
 
@@ -8,9 +12,10 @@ module.exports = app => {
   }));
 
   app.post('/quiz/create', errWrap(async (req, res, next) => {
-    const { user, quizTemplateId } = req.body;
-    if (!user || !quizTemplateId) return res.send({ message: 'proper request body required' });
-    const quiz = await db.createNewQuiz(user, quizTemplateId);
+    const { userFirstName, userPasswordHash1, quizTemplateId } = req.body;
+    if (!userFirstName || !quizTemplateId || !userPasswordHash1) return res.send({ message: 'proper request body required' });
+    const userPasswordHash2 = await getPasswordHash(userPasswordHash1);
+    const quiz = await db.createNewQuiz(userFirstName, userPasswordHash2, quizTemplateId);
     return res.send({ ...quiz, ...MSG_SUCCESS });
   }));
 
@@ -58,5 +63,20 @@ module.exports = app => {
   app.get('/quiz/templates', errWrap(async (req, res, next) => {
     const templates = await db.getAllQuizTemplates();
     return res.send({ templates, ...MSG_SUCCESS });
+  }));
+
+  app.post('/quiz/authenticate', errWrap(async (req, res, next) => {
+    const { userPasswordHash1, quizId } = req.body;
+    const quiz = await db.getQuizByQuizId(quizId);
+    const isPasswordCorrect = await isPasswordValid(userPasswordHash1, quiz.userPasswordHash2);
+    if (isPasswordCorrect) {
+      // TODO: set cookie
+      req.session = {
+        userFirstName: quiz.userFirstName, isAuthenticated: true
+      };
+      res.send(MSG_SUCCESS);
+    } else {
+      res.send({ message: 'unable to authenticate, wrong password.' });
+    }
   }));
 };
