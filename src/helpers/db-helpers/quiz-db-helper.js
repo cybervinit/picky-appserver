@@ -68,7 +68,7 @@ const getRankOfAttempt = async (quizAttemptId) => {
     { '$unwind': { path: '$attempts', 'includeArrayIndex': 'rank' } },
     { '$match': { 'attempts.quizAttemptId': quizAttemptId } },
     { '$project': { 'rank': { '$add': [ '$rank', 1 ] } } }]);
-  return rankObj;
+  return rankObj[0].rank;
 };
 
 const getAllQuizTemplates = () => QuizTemplate.find();

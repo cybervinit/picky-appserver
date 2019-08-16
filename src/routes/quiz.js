@@ -38,7 +38,6 @@ module.exports = app => {
 
   app.get('/quiz/templates/:quizTemplateId', errWrap(async (req, res, next) => {
     const { quizTemplateId } = req.params;
-    console.log('QUIZ template id: ', quizTemplateId);
     const quizTemplate = await db.getQuizTemplateByTemplateId(quizTemplateId);
     return res.send({ ...quizTemplate, ...MSG_SUCCESS });
   }));
@@ -65,15 +64,13 @@ module.exports = app => {
     const { quizAttemptId, answerArray, score } = req.body;
 
     const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerArray, score);
-    console.log(updatedQuizAttempt);
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
   }));
 
   app.get('/quiz/attempt/rank-by-attempt-id/:quizAttemptId', errWrap(async (req, res, next) => {
     const { quizAttemptId } = req.params;
-    const rankObj = await db.getRankOfAttempt(quizAttemptId);
-    console.log(rankObj);
-    return res.send({ ...rankObj, ...MSG_SUCCESS });
+    const rank = await db.getRankOfAttempt(quizAttemptId);
+    return res.send({ rank, ...MSG_SUCCESS });
   }));
 
   app.post('/quiz/template', errWrap(async (req, res, next) => {
