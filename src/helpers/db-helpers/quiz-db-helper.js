@@ -34,6 +34,11 @@ const getQuizQuestionsByTemplateId = async (quizTemplateId) => {
   return questions;
 };
 
+const getQuizTemplateByTemplateId = async (quizTemplateId) => {
+  const quizTemplate = await QuizTemplate.findOne({ quizTemplateId });
+  return quizTemplate.toObject();
+};
+
 const updateQuizWithQuizOwnerAnswer = async (quizId, answerArr) => {
   const updatedQuiz = await Quiz.findOneAndUpdate({
     quizId
@@ -49,10 +54,10 @@ const createQuizAttempt = async (quizId) => {
   return newQuizAttempt.toObject();
 };
 
-const updateQuizAttemptWithAnswer = async (quizAttemptId, answerIndex) => {
+const updateQuizAttemptWithAnswer = async (quizAttemptId, answerArray) => {
   const updatedQuizAttempt = await QuizAttempt.findOneAndUpdate({
     quizAttemptId
-  }, { $push: { answerArray: answerIndex } }, { new: true });
+  }, { $push: { answerArray: { $each: answerArray } } }, { new: true });
   return updatedQuizAttempt.toObject();
 };
 
@@ -77,5 +82,6 @@ module.exports = {
   updateQuizAttemptWithAnswer,
   getAllQuizTemplates,
   updateAnswerMatrix,
-  getQuizByQuizId
+  getQuizByQuizId,
+  getQuizTemplateByTemplateId
 };

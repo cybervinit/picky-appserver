@@ -19,10 +19,28 @@ module.exports = app => {
     return res.send({ ...quiz, ...MSG_SUCCESS });
   }));
 
+  app.get('/quiz/quizzes/:quizId', errWrap(async (req, res, next) => {
+    const { quizId } = req.params;
+    const quiz = await db.getQuizByQuizId(quizId);
+    return res.send({ ...quiz, ...MSG_SUCCESS });
+  }));
+
   app.post('/quiz/answer-matrix', errWrap(async (req, res, next) => {
     const { quizId, answerMatrix } = req.body;
     const quiz = await db.updateAnswerMatrix(quizId, answerMatrix);
     return res.send({ ...quiz, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/templates', errWrap(async (req, res, next) => {
+    const templates = await db.getAllQuizTemplates();
+    return res.send({ templates, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/templates/:quizTemplateId', errWrap(async (req, res, next) => {
+    const { quizTemplateId } = req.params;
+    console.log('QUIZ template id: ', quizTemplateId);
+    const quizTemplate = await db.getQuizTemplateByTemplateId(quizTemplateId);
+    return res.send({ ...quizTemplate, ...MSG_SUCCESS });
   }));
 
   app.get('/quiz/questions/:quizTemplateId', errWrap(async (req, res, next) => {
@@ -38,13 +56,16 @@ module.exports = app => {
   }));
 
   app.post('/quiz/create/quiz-attempt', errWrap(async (req, res, next) => {
-    const quizAttempt = await db.createQuizAttempt();
+    const { quizId } = req.body;
+    const quizAttempt = await db.createQuizAttempt(quizId);
     return res.send({ ...quizAttempt, ...MSG_SUCCESS });
   }));
 
-  app.post('/quiz/answer/attempt', errWrap(async (req, res, next) => {
-    const { quizAttemptId, answerIndex } = req.body;
-    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerIndex);
+  app.post('/quiz/attempt/update-answers', errWrap(async (req, res, next) => {
+    const { quizAttemptId, answerArray } = req.body;
+    console.log(req.body);
+    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerArray);
+    console.log(updatedQuizAttempt);
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
   }));
 
@@ -58,11 +79,6 @@ module.exports = app => {
     const { quizTemplateId, question } = req.body;
     const newQuizQuestion = await db.addQuizQuestionToTemplate(quizTemplateId, question);
     return res.send({ ...newQuizQuestion, ...MSG_SUCCESS });
-  }));
-
-  app.get('/quiz/templates', errWrap(async (req, res, next) => {
-    const templates = await db.getAllQuizTemplates();
-    return res.send({ templates, ...MSG_SUCCESS });
   }));
 
   app.post('/quiz/authenticate', errWrap(async (req, res, next) => {
