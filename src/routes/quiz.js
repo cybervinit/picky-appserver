@@ -62,11 +62,18 @@ module.exports = app => {
   }));
 
   app.post('/quiz/attempt/update-answers', errWrap(async (req, res, next) => {
-    const { quizAttemptId, answerArray } = req.body;
-    console.log(req.body);
-    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerArray);
+    const { quizAttemptId, answerArray, score } = req.body;
+
+    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerArray, score);
     console.log(updatedQuizAttempt);
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/attempt/rank-by-attempt-id/:quizAttemptId', errWrap(async (req, res, next) => {
+    const { quizAttemptId } = req.params;
+    const rankObj = await db.getRankOfAttempt(quizAttemptId);
+    console.log(rankObj);
+    return res.send({ ...rankObj, ...MSG_SUCCESS });
   }));
 
   app.post('/quiz/template', errWrap(async (req, res, next) => {
