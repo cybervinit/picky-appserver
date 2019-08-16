@@ -16,7 +16,6 @@ module.exports = app => {
 
   app.post('/quiz/answer-matrix', errWrap(async (req, res, next) => {
     const { quizId, answerMatrix } = req.body;
-    console.log(quizId);
     const quiz = await db.updateAnswerMatrix(quizId, answerMatrix);
     return res.send({ ...quiz, ...MSG_SUCCESS });
   }));
