@@ -1,4 +1,8 @@
-const { errWrap } = require('../config/basic');
+const {
+  errWrap,
+  getPasswordHash,
+  isPasswordValid
+} = require('../config/basic');
 const { MSG_SUCCESS } = require('../config/constants');
 const db = require('../helpers/db-helpers/quiz-db-helper');
 
@@ -8,17 +12,34 @@ module.exports = app => {
   }));
 
   app.post('/quiz/create', errWrap(async (req, res, next) => {
-    const { user, quizTemplateId } = req.body;
-    if (!user || !quizTemplateId) return res.send({ message: 'proper request body required' });
-    const quiz = await db.createNewQuiz(user, quizTemplateId);
+    const { userFirstName, userPasswordHash1, quizTemplateId } = req.body;
+    if (!userFirstName || !quizTemplateId || !userPasswordHash1) return res.send({ message: 'proper request body required' });
+    const userPasswordHash2 = await getPasswordHash(userPasswordHash1);
+    const quiz = await db.createNewQuiz(userFirstName, userPasswordHash2, quizTemplateId);
+    return res.send({ ...quiz, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/quizzes/:quizId', errWrap(async (req, res, next) => {
+    const { quizId } = req.params;
+    const quiz = await db.getQuizByQuizId(quizId);
     return res.send({ ...quiz, ...MSG_SUCCESS });
   }));
 
   app.post('/quiz/answer-matrix', errWrap(async (req, res, next) => {
     const { quizId, answerMatrix } = req.body;
-    console.log(quizId);
     const quiz = await db.updateAnswerMatrix(quizId, answerMatrix);
     return res.send({ ...quiz, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/templates', errWrap(async (req, res, next) => {
+    const templates = await db.getAllQuizTemplates();
+    return res.send({ templates, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/templates/:quizTemplateId', errWrap(async (req, res, next) => {
+    const { quizTemplateId } = req.params;
+    const quizTemplate = await db.getQuizTemplateByTemplateId(quizTemplateId);
+    return res.send({ ...quizTemplate, ...MSG_SUCCESS });
   }));
 
   app.get('/quiz/questions/:quizTemplateId', errWrap(async (req, res, next) => {
@@ -34,14 +55,22 @@ module.exports = app => {
   }));
 
   app.post('/quiz/create/quiz-attempt', errWrap(async (req, res, next) => {
-    const quizAttempt = await db.createQuizAttempt();
+    const { quizId } = req.body;
+    const quizAttempt = await db.createQuizAttempt(quizId);
     return res.send({ ...quizAttempt, ...MSG_SUCCESS });
   }));
 
-  app.post('/quiz/answer/attempt', errWrap(async (req, res, next) => {
-    const { quizAttemptId, answerIndex } = req.body;
-    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerIndex);
+  app.post('/quiz/attempt/update-answers', errWrap(async (req, res, next) => {
+    const { quizAttemptId, answerArray, score } = req.body;
+
+    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerArray, score);
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
+  }));
+
+  app.get('/quiz/attempt/rank-by-attempt-id/:quizAttemptId', errWrap(async (req, res, next) => {
+    const { quizAttemptId } = req.params;
+    const rank = await db.getRankOfAttempt(quizAttemptId);
+    return res.send({ rank, ...MSG_SUCCESS });
   }));
 
   app.post('/quiz/template', errWrap(async (req, res, next) => {
@@ -56,8 +85,18 @@ module.exports = app => {
     return res.send({ ...newQuizQuestion, ...MSG_SUCCESS });
   }));
 
-  app.get('/quiz/templates', errWrap(async (req, res, next) => {
-    const templates = await db.getAllQuizTemplates();
-    return res.send({ templates, ...MSG_SUCCESS });
+  app.post('/quiz/authenticate', errWrap(async (req, res, next) => {
+    const { userPasswordHash1, quizId } = req.body;
+    const quiz = await db.getQuizByQuizId(quizId);
+    const isPasswordCorrect = await isPasswordValid(userPasswordHash1, quiz.userPasswordHash2);
+    if (isPasswordCorrect) {
+      // TODO: set cookie
+      req.session = {
+        userFirstName: quiz.userFirstName, isAuthenticated: true
+      };
+      res.send(MSG_SUCCESS);
+    } else {
+      res.send({ message: 'unable to authenticate, wrong password.' });
+    }
   }));
 };

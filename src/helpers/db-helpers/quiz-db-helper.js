@@ -18,15 +18,25 @@ const addQuizQuestionToTemplate = async (quizTemplateId, question) => {
   return newQuestion.toObject();
 };
 
-const createNewQuiz = async (user, quizTemplateId) => {
+const createNewQuiz = async (userFirstName, userPasswordHash2, quizTemplateId) => {
   const quizId = getRandomString();
-  const newQuiz = await Quiz.create({ user, quizId, quizTemplateId });
+  const newQuiz = await Quiz.create({ userFirstName, userPasswordHash2, quizId, quizTemplateId });
   return newQuiz.toObject();
+};
+
+const getQuizByQuizId = async (quizId) => {
+  const quiz = await Quiz.findOne({ quizId });
+  return quiz.toObject();
 };
 
 const getQuizQuestionsByTemplateId = async (quizTemplateId) => {
   const questions = await QuizQuestion.find({ quizTemplateId }).sort({ _id: 1 });
   return questions;
+};
+
+const getQuizTemplateByTemplateId = async (quizTemplateId) => {
+  const quizTemplate = await QuizTemplate.findOne({ quizTemplateId });
+  return quizTemplate.toObject();
 };
 
 const updateQuizWithQuizOwnerAnswer = async (quizId, answerArr) => {
@@ -44,11 +54,21 @@ const createQuizAttempt = async (quizId) => {
   return newQuizAttempt.toObject();
 };
 
-const updateQuizAttemptWithAnswer = async (quizAttemptId, answerIndex) => {
+const updateQuizAttemptWithAnswer = async (quizAttemptId, answerArray, score) => {
   const updatedQuizAttempt = await QuizAttempt.findOneAndUpdate({
     quizAttemptId
-  }, { $push: { answerArray: answerIndex } }, { new: true });
+  }, { $push: { answerArray: { $each: answerArray } }, score }, { new: true });
   return updatedQuizAttempt.toObject();
+};
+
+const getRankOfAttempt = async (quizAttemptId) => {
+  const rankObj = await QuizAttempt.aggregate([
+    { '$sort': { score: -1, _id: -1 } },
+    { '$group': { _id: null, 'attempts': { '$push': '$$ROOT' } } },
+    { '$unwind': { path: '$attempts', 'includeArrayIndex': 'rank' } },
+    { '$match': { 'attempts.quizAttemptId': quizAttemptId } },
+    { '$project': { 'rank': { '$add': [ '$rank', 1 ] } } }]);
+  return rankObj[0].rank;
 };
 
 const getAllQuizTemplates = () => QuizTemplate.find();
@@ -71,5 +91,8 @@ module.exports = {
   createQuizAttempt,
   updateQuizAttemptWithAnswer,
   getAllQuizTemplates,
-  updateAnswerMatrix
+  updateAnswerMatrix,
+  getQuizByQuizId,
+  getQuizTemplateByTemplateId,
+  getRankOfAttempt
 };

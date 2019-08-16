@@ -1,4 +1,5 @@
 const cryptoRandomString = require('crypto-random-string');
+const bcrypt = require('bcrypt');
 
 const errHandler = function (err, obj) {
   if (err) { throw err; }
@@ -16,9 +17,19 @@ const getRandomString = () => {
   return cryptoRandomString({ length: 5, characters: '1234567890abcdefghijklmnopqrstuvwxyz-' });
 };
 
+const getPasswordHash = (pass) => {
+  return bcrypt.hash(pass, 10);
+};
+
+const isPasswordValid = (candidate, hash) => {
+  return bcrypt.compare(candidate, hash);
+};
+
 module.exports = {
   errHandler,
   errWrap,
   err,
-  getRandomString
+  getRandomString,
+  getPasswordHash,
+  isPasswordValid
 };

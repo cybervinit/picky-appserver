@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const quizSchema = new Schema({
   quizId: Schema.Types.String,
   quizTemplateId: Schema.Types.String,
-  user: Schema.Types.String,
+  userFirstName: Schema.Types.String,
+  userPasswordHash2: Schema.Types.String,
   answerMatrix: [[Schema.Types.Number]]
 });
 
