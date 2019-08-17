@@ -45,7 +45,6 @@ module.exports = app => {
   app.get('/quiz/questions/:quizTemplateId', errWrap(async (req, res, next) => {
     const { quizTemplateId } = req.params;
     const questions = await db.getQuizQuestionsByTemplateId(quizTemplateId);
-    console.log('Questions of length: ' + questions.length, questions);
     return res.send({ questions, ...MSG_SUCCESS });
   }));
 
