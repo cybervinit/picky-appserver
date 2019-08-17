@@ -71,6 +71,13 @@ const getRankOfAttempt = async (quizAttemptId) => {
   return rankObj[0].rank;
 };
 
+const postMessageToQuizOwner = async (message, quizAttemptId) => {
+  const updatedQuizAttempt = await QuizAttempt.findOneAndUpdate({ quizAttemptId }, {
+    message
+  }, { new: true });
+  return updatedQuizAttempt.toObject();
+};
+
 const getAllQuizTemplates = () => QuizTemplate.find();
 
 const updateAnswerMatrix = async (quizId, answerMatrix) => {
@@ -94,5 +101,6 @@ module.exports = {
   updateAnswerMatrix,
   getQuizByQuizId,
   getQuizTemplateByTemplateId,
-  getRankOfAttempt
+  getRankOfAttempt,
+  postMessageToQuizOwner
 };
