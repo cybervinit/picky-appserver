@@ -67,9 +67,9 @@ module.exports = app => {
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
   }));
 
-  app.get('/quiz/attempt/rank-by-attempt-id/:quizAttemptId', errWrap(async (req, res, next) => {
-    const { quizAttemptId } = req.params;
-    const rank = await db.getRankOfAttempt(quizAttemptId);
+  app.get('/quiz/attempt/rank-by-attempt-id/:quizId/:quizAttemptId', errWrap(async (req, res, next) => {
+    const { quizId, quizAttemptId } = req.params;
+    const rank = await db.getRankOfAttempt(quizId, quizAttemptId);
     return res.send({ rank, ...MSG_SUCCESS });
   }));
 

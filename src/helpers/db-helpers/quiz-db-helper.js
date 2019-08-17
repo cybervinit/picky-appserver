@@ -61,8 +61,9 @@ const updateQuizAttemptWithAnswer = async (quizAttemptId, answerArray, score) =>
   return updatedQuizAttempt.toObject();
 };
 
-const getRankOfAttempt = async (quizAttemptId) => {
+const getRankOfAttempt = async (quizId, quizAttemptId) => {
   const rankObj = await QuizAttempt.aggregate([
+    { '$match': { quizId } },
     { '$sort': { score: -1, _id: -1 } },
     { '$group': { _id: null, 'attempts': { '$push': '$$ROOT' } } },
     { '$unwind': { path: '$attempts', 'includeArrayIndex': 'rank' } },
