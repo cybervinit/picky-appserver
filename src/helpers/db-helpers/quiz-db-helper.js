@@ -58,6 +58,24 @@ const updateQuizAttemptWithAnswer = async (quizAttemptId, answerArray, score) =>
   const updatedQuizAttempt = await QuizAttempt.findOneAndUpdate({
     quizAttemptId
   }, { $push: { answerArray: { $each: answerArray } }, score }, { new: true });
+
+  return updatedQuizAttempt.toObject();
+};
+
+const getRankOfAttempt = async (quizAttemptId) => {
+  const rankObj = await QuizAttempt.aggregate([
+    { '$sort': { score: -1, _id: -1 } },
+    { '$group': { _id: null, 'attempts': { '$push': '$$ROOT' } } },
+    { '$unwind': { path: '$attempts', 'includeArrayIndex': 'rank' } },
+    { '$match': { 'attempts.quizAttemptId': quizAttemptId } },
+    { '$project': { 'rank': { '$add': [ '$rank', 1 ] } } }]);
+  return rankObj[0].rank;
+};
+
+const postMessageToQuizOwner = async (message, quizAttemptId) => {
+  const updatedQuizAttempt = await QuizAttempt.findOneAndUpdate({ quizAttemptId }, {
+    message
+  }, { new: true });
   return updatedQuizAttempt.toObject();
 };
 
@@ -94,5 +112,6 @@ module.exports = {
   updateAnswerMatrix,
   getQuizByQuizId,
   getQuizTemplateByTemplateId,
-  getRankOfAttempt
+  getRankOfAttempt,
+  postMessageToQuizOwner
 };
