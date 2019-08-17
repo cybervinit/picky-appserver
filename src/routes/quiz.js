@@ -70,6 +70,7 @@ module.exports = app => {
   app.post('/quiz/attempt/message', errWrap(async (req, res, next) => {
     const { message, quizAttemptId } = req.body;
     const updatedQuizAttempt = await db.postMessageToQuizOwner(message, quizAttemptId);
+
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
   }));
 
