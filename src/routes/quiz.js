@@ -5,6 +5,7 @@ const {
 } = require('../config/basic');
 const { MSG_SUCCESS } = require('../config/constants');
 const db = require('../helpers/db-helpers/quiz-db-helper');
+const { authenticate } = require('../config/authenticate');
 
 module.exports = app => {
   app.get('/quiz', errWrap(async (req, res, next) => {
@@ -29,6 +30,18 @@ module.exports = app => {
     const { quizId, answerMatrix } = req.body;
     const quiz = await db.updateAnswerMatrix(quizId, answerMatrix);
     return res.send({ ...quiz, ...MSG_SUCCESS });
+  }));
+
+  app.post('/quiz/template', errWrap(async (req, res, next) => {
+    const { name } = req.body;
+    const newQuiz = await db.createQuizTemplate(name);
+    return res.send({ ...newQuiz, ...MSG_SUCCESS });
+  }));
+
+  app.post('/quiz/template/add-question', errWrap(async (req, res, next) => {
+    const { quizTemplateId, question } = req.body;
+    const newQuizQuestion = await db.addQuizQuestionToTemplate(quizTemplateId, question);
+    return res.send({ ...newQuizQuestion, ...MSG_SUCCESS });
   }));
 
   app.get('/quiz/templates', errWrap(async (req, res, next) => {
@@ -80,30 +93,27 @@ module.exports = app => {
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
   }));
 
-  app.post('/quiz/template', errWrap(async (req, res, next) => {
-    const { name } = req.body;
-    const newQuiz = await db.createQuizTemplate(name);
-    return res.send({ ...newQuiz, ...MSG_SUCCESS });
-  }));
-
-  app.post('/quiz/template/add-question', errWrap(async (req, res, next) => {
-    const { quizTemplateId, question } = req.body;
-    const newQuizQuestion = await db.addQuizQuestionToTemplate(quizTemplateId, question);
-    return res.send({ ...newQuizQuestion, ...MSG_SUCCESS });
-  }));
-
   app.post('/quiz/authenticate', errWrap(async (req, res, next) => {
     const { userPasswordHash1, quizId } = req.body;
     const quiz = await db.getQuizByQuizId(quizId);
     const isPasswordCorrect = await isPasswordValid(userPasswordHash1, quiz.userPasswordHash2);
-    if (isPasswordCorrect) {
-      // TODO: set cookie
-      req.session = {
-        userFirstName: quiz.userFirstName, isAuthenticated: true
-      };
-      res.send(MSG_SUCCESS);
+    if (isPasswordCorrect || req.session.quiz) {
+      req.session.quiz = { userFirstName: quiz.userFirstName };
+      return res.send(MSG_SUCCESS);
     } else {
-      res.send({ message: 'unable to authenticate, wrong password.' });
+      req.session.quiz = null;
+      return res.send({ message: 'unable to authenticate, wrong password.' });
     }
+  }));
+
+  app.post('/quiz/logout', errWrap(async (req, res, next) => {
+    req.session.quiz = null;
+    return res.send(MSG_SUCCESS);
+  }));
+
+  app.get('/quiz/owner/results/:quizId', authenticate, errWrap(async (req, res, next) => {
+    const { quizId } = req.params;
+    const results = await db.getAggregateResults(quizId);
+    return res.send({ results, ...MSG_SUCCESS });
   }));
 };

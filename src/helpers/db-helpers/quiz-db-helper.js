@@ -91,6 +91,23 @@ const updateAnswerMatrix = async (quizId, answerMatrix) => {
   return updatedQuiz.toObject();
 };
 
+const getAggregateResults = async (quizId) => {
+  const results = await QuizAttempt.aggregate([
+    { '$match': { quizId } },
+    { '$sort': { score: -1, _id: -1 } },
+    { '$project': {
+      'message': '$message',
+      'score': '$score',
+      'isResultSeen': '$isResultSeen'
+    } }
+  ]);
+  const quizAttemptUpdates = results.map(r => QuizAttempt.updateOne({
+    _id: r._id
+  }, { isResultSeen: true }));
+  await Promise.all(quizAttemptUpdates);
+  return results;
+};
+
 module.exports = {
   createQuizTemplate,
   addQuizQuestionToTemplate,
@@ -104,5 +121,6 @@ module.exports = {
   getQuizByQuizId,
   getQuizTemplateByTemplateId,
   getRankOfAttempt,
-  postMessageToQuizOwner
+  postMessageToQuizOwner,
+  getAggregateResults
 };
