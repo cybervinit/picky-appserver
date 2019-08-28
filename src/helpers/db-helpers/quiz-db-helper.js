@@ -67,6 +67,11 @@ const updateQuizAttemptWithAnswer = async (quizAttemptId, answer, score) => {
   return updatedQuizAttempt;
 };
 
+const getAttemptAmount = async (quizId) => {
+  const amount = await QuizAttempt.find({quizId}).count();
+  return amount;
+};
+
 const postMessageToQuizOwner = async (message, quizAttemptId) => {
   const updatedQuizAttempt = await QuizAttempt.findOneAndUpdate({ quizAttemptId }, {
     message
@@ -122,6 +127,7 @@ module.exports = {
   createQuizAttempt,
   updateQuizAttemptWithAnswerArray,
   updateQuizAttemptWithAnswer,
+  getAttemptAmount,
   getAllQuizTemplates,
   updateAnswerMatrix,
   getQuizByQuizId,
