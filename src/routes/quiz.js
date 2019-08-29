@@ -76,8 +76,21 @@ module.exports = app => {
   app.post('/quiz/attempt/update-answers', errWrap(async (req, res, next) => {
     const { quizAttemptId, answerArray, score } = req.body;
 
-    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answerArray, score);
+    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswerArray(quizAttemptId, answerArray, score);
     return res.send({ ...updatedQuizAttempt, ...MSG_SUCCESS });
+  }));
+
+  app.post('/quiz/attempt/update-answer', errWrap(async (req, res, next) => {
+    const { quizId, quizAttemptId, answer, score } = req.body;
+    const updatedQuizAttempt = await db.updateQuizAttemptWithAnswer(quizAttemptId, answer, score);
+    const rank = await db.getRankOfAttempt(quizId, quizAttemptId);
+    const attemptAmount = await db.getAttemptAmount(quizId);
+    return res.send({
+      rank,
+      attemptAmount,
+      ...updatedQuizAttempt,
+      ...MSG_SUCCESS
+    });
   }));
 
   app.get('/quiz/attempt/rank-by-attempt-id/:quizId/:quizAttemptId', errWrap(async (req, res, next) => {
