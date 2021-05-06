@@ -34,7 +34,7 @@
     "redis": "^2.8.0",
     "request": "^2.85.0",
     "serve-favicon": "~2.4.5",
-    "underscore": "^1.8.3",
+    "underscore": "^1.12.1",
     "validator": "^10.7.1"
   },
   "devDependencies": {
